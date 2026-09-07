@@ -1,18 +1,45 @@
 import { Link } from 'react-router-dom'
 
 const items = [
-  { to: '/pelea/nueva', label: 'Crear pelea', icon: '⚔️', desc: 'Elegí a los dos jugadores y arrancá el contador de golpes.' },
-  { to: '/jugadores', label: 'Agregar jugador', icon: '➕', desc: 'Sumá gente al roster del campeonato.' },
-  { to: '/estadisticas', label: 'Estadísticas', icon: '📊', desc: 'Quién se llevó más golpes especiales.' },
+  {
+    to: '/pelea/nueva',
+    label: 'Crear pelea',
+    icon: '⚔️',
+    desc: 'Elegí a los dos jugadores y arrancá el contador de golpes.',
+    from: 'from-brand',
+    to2: 'to-brand-2',
+    ring: 'hover:border-brand/60',
+  },
+  {
+    to: '/jugadores',
+    label: 'Agregar jugador',
+    icon: '➕',
+    desc: 'Sumá gente al roster del campeonato.',
+    from: 'from-cyan-2',
+    to2: 'to-cyan',
+    ring: 'hover:border-cyan/60',
+  },
+  {
+    to: '/estadisticas',
+    label: 'Estadísticas',
+    icon: '📊',
+    desc: 'Quién se llevó más golpes especiales.',
+    from: 'from-violet',
+    to2: 'to-accent',
+    ring: 'hover:border-violet/60',
+  },
 ]
 
 export default function HomePage() {
   return (
-    <div className="flex flex-1 flex-col px-5 pb-8 pt-10">
+    <div className="flex flex-1 flex-col px-5 pb-8 pt-12">
       <div className="mb-10">
-        <h1 className="font-display text-4xl leading-none tracking-wide text-brand-2">SUPER</h1>
-        <h1 className="font-display text-4xl leading-none tracking-wide text-accent">OCULTOS</h1>
-        <p className="mt-3 text-sm text-white/50">Campeonato de golpes especiales de The King of Fighters.</p>
+        <h1 className="font-display text-6xl leading-[0.85] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-brand via-brand-2 to-accent drop-shadow-[0_2px_20px_rgba(255,59,92,0.35)]">
+          SUPER
+          <br />
+          OCULTOS
+        </h1>
+        <p className="mt-4 text-sm text-white/50">Campeonato de golpes especiales de The King of Fighters.</p>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -20,14 +47,18 @@ export default function HomePage() {
           <Link
             key={item.to}
             to={item.to}
-            className="flex items-center gap-4 rounded-2xl border border-edge/60 bg-panel/70 p-5 shadow-lg shadow-black/30 transition-transform active:scale-[0.98]"
+            className={`flex items-center gap-4 rounded-2xl border border-edge/60 bg-panel/80 p-5 shadow-lg shadow-black/40 backdrop-blur-sm transition-all active:scale-[0.97] ${item.ring}`}
           >
-            <span className="text-3xl">{item.icon}</span>
+            <span
+              className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${item.from} ${item.to2} text-2xl shadow-lg`}
+            >
+              {item.icon}
+            </span>
             <span className="flex-1">
-              <span className="block font-display text-lg text-white">{item.label}</span>
+              <span className="block font-display text-2xl tracking-wide text-white">{item.label}</span>
               <span className="block text-xs text-white/50">{item.desc}</span>
             </span>
-            <span className="text-white/30">›</span>
+            <span className="text-2xl text-white/25">›</span>
           </Link>
         ))}
       </div>

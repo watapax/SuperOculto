@@ -13,12 +13,14 @@ interface Props {
 
 const ACCENTS = {
   top: {
-    zone: 'bg-gradient-to-b from-[#3a0a0a] to-[#1c0505]',
-    bar: 'bg-black/35',
+    zone: 'bg-gradient-to-b from-[#5c0a2e] via-[#3a0a1c] to-[#1c0510]',
+    bar: 'bg-black/30',
+    text: 'text-brand-2',
   },
   bottom: {
-    zone: 'bg-gradient-to-t from-[#0a1830] to-[#050d1c]',
-    bar: 'bg-black/35',
+    zone: 'bg-gradient-to-t from-[#062a4a] via-[#0a1a30] to-[#050d1c]',
+    bar: 'bg-black/30',
+    text: 'text-cyan',
   },
 }
 
@@ -39,10 +41,12 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
   }
 
   const labelBar = (
-    <div className={`flex items-center justify-between px-4 py-2 ${accent.bar}`}>
-      <span className="truncate font-display text-sm tracking-wide text-white">{playerName}</span>
+    <div className={`flex items-center justify-between px-4 py-2.5 ${accent.bar}`}>
+      <span className={`truncate font-display text-xl tracking-wide ${accent.text}`}>{playerName}</span>
       <div className="flex items-center gap-2">
-        <span className="font-display text-3xl leading-none text-accent">{hits}</span>
+        <span className="font-display text-4xl leading-none text-accent drop-shadow-[0_0_12px_rgba(255,214,10,0.6)]">
+          {hits}
+        </span>
         <button
           type="button"
           onClick={(e) => {
@@ -50,7 +54,7 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
             onUndo()
           }}
           aria-label="Deshacer último golpe"
-          className="rounded-full bg-black/40 px-2 py-1 text-xs text-white/60 hover:text-white"
+          className="rounded-full bg-black/40 px-2.5 py-1.5 text-sm text-white/60 hover:text-white"
         >
           ↺
         </button>
@@ -59,11 +63,11 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
   )
 
   const grid = (
-    <div className="flex flex-1 flex-wrap content-center items-center justify-center gap-3 p-4">
+    <div className="grid flex-1 grid-cols-3 items-center gap-2 p-4">
       {characters.map((c) => (
-        <div key={c} className="flex flex-col items-center gap-1">
-          <CharacterAvatar name={c} size="lg" />
-          <span className="max-w-[64px] truncate text-center text-[10px] text-white/60">{c}</span>
+        <div key={c} className="flex flex-col items-center gap-1.5">
+          <CharacterAvatar name={c} size="lg" selected />
+          <span className="max-w-[72px] truncate text-center text-[10px] font-medium text-white/60">{c}</span>
         </div>
       ))}
     </div>

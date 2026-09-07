@@ -14,7 +14,7 @@ export interface Burst {
   particles: Particle[]
 }
 
-const COLORS = ['#ffd43b', '#ffa94d', '#e8590c', '#fff3bf', '#ff922b']
+const COLORS = ['#ffd60a', '#ff3b5c', '#ff8a3d', '#22d3ee', '#b389ff', '#9fef00', '#ffffff']
 const BURST_DURATION_MS = 650
 
 export function useTapEffects() {

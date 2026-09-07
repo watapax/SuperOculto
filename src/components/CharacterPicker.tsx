@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import CharacterAvatar from './CharacterAvatar'
 import { Input } from './ui'
 
+const MAX_CHARACTERS = 3
+
 export default function CharacterPicker({
   options,
   selected,
@@ -16,9 +18,15 @@ export default function CharacterPicker({
     () => options.filter((c) => c.toLowerCase().includes(search.toLowerCase())),
     [options, search],
   )
+  const atMax = selected.length >= MAX_CHARACTERS
 
   function toggle(character: string) {
-    onChange(selected.includes(character) ? selected.filter((c) => c !== character) : [...selected, character])
+    if (selected.includes(character)) {
+      onChange(selected.filter((c) => c !== character))
+      return
+    }
+    if (atMax) return
+    onChange([...selected, character])
   }
 
   return (
@@ -30,22 +38,37 @@ export default function CharacterPicker({
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1"
         />
-        <span className="shrink-0 text-xs text-white/50">{selected.length} elegido(s)</span>
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 font-display text-sm tracking-wide ${
+            atMax ? 'bg-lime/20 text-lime' : 'bg-panel-2 text-white/60'
+          }`}
+        >
+          {selected.length}/{MAX_CHARACTERS}
+        </span>
       </div>
-      <div className="grid max-h-64 grid-cols-3 gap-2 overflow-y-auto rounded-md border border-edge/40 p-2">
+      {atMax && (
+        <p className="mb-2 text-[11px] font-medium text-lime">Equipo completo — sacá uno para elegir otro.</p>
+      )}
+      <div className="grid max-h-64 grid-cols-3 gap-2 overflow-y-auto rounded-xl border border-edge/50 bg-ink/40 p-2">
         {filtered.map((c) => {
           const active = selected.includes(c)
+          const disabled = !active && atMax
           return (
             <button
               type="button"
               key={c}
               onClick={() => toggle(c)}
-              className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-center transition-colors ${
-                active ? 'bg-brand/25 ring-1 ring-brand' : 'hover:bg-panel-2'
+              disabled={disabled}
+              className={`flex flex-col items-center gap-1 rounded-xl p-1.5 text-center transition-all ${
+                active
+                  ? 'bg-brand/20'
+                  : disabled
+                    ? 'opacity-30'
+                    : 'hover:bg-panel-2 active:scale-95'
               }`}
             >
-              <CharacterAvatar name={c} size="sm" />
-              <span className="line-clamp-2 text-[11px] leading-tight text-white/80">{c}</span>
+              <CharacterAvatar name={c} size="sm" selected={active} />
+              <span className="line-clamp-2 text-[11px] font-medium leading-tight text-white/80">{c}</span>
             </button>
           )
         })}

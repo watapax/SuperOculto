@@ -60,13 +60,13 @@ export default function LiveFightPage() {
   return (
     <div className="mx-auto flex h-dvh max-w-md flex-col">
       <AppHeader
-        title={game.name}
+        title={`KOF ${shortYear(game.year)}`}
         onBack={handleBack}
         right={
           <button
             type="button"
             onClick={handleFinish}
-            className="shrink-0 rounded-md bg-brand px-3 py-1.5 text-xs font-bold text-ink"
+            className="shrink-0 rounded-xl bg-gradient-to-br from-brand to-brand-2 px-4 py-2 font-display text-sm tracking-wide text-ink shadow-[0_2px_12px_-2px_var(--color-brand)] active:scale-95"
           >
             Finalizar
           </button>
@@ -83,10 +83,12 @@ export default function LiveFightPage() {
           onUndo={() => undoHit(fight.id, 0)}
         />
 
-        <div className="z-20 flex items-center justify-center gap-3 bg-ink px-4 py-2">
-          <span className="font-display text-sm text-brand-2">KOF</span>
-          <span className="font-display text-lg font-black text-red-500">VS</span>
-          <span className="font-display text-sm text-sky-400">{shortYear(game.year)}</span>
+        <div className="relative z-20 flex items-center justify-center gap-4 border-y border-edge/60 bg-ink px-4 py-3">
+          <span className="font-display text-lg tracking-wide text-brand-2">KOF</span>
+          <span className="font-display text-3xl leading-none text-accent drop-shadow-[0_0_14px_rgba(255,214,10,0.7)]">
+            VS
+          </span>
+          <span className="font-display text-lg tracking-wide text-cyan">{shortYear(game.year)}</span>
         </div>
 
         <PlayerZone

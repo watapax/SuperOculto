@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
 import CharacterPicker from '../components/CharacterPicker'
-import { Card, Select } from '../components/ui'
+import { Select } from '../components/ui'
 import { GAME_LIST, GAMES } from '../data/kofData'
 import { useStore } from '../store/useStore'
 import type { GameId } from '../types'
 
+const REQUIRED_CHARACTERS = 3
+
 function PlayerPanel({
   label,
+  side,
   players,
   excludeId,
   playerId,
@@ -18,6 +21,7 @@ function PlayerPanel({
   gameCharacters,
 }: {
   label: string
+  side: 'p1' | 'p2'
   players: { id: string; name: string }[]
   excludeId: string
   playerId: string
@@ -26,9 +30,14 @@ function PlayerPanel({
   onCharactersChange: (next: string[]) => void
   gameCharacters: string[]
 }) {
+  const accent =
+    side === 'p1'
+      ? { border: 'border-brand/50', text: 'text-brand-2', glow: 'shadow-[0_0_24px_-8px_var(--color-brand)]' }
+      : { border: 'border-cyan/50', text: 'text-cyan', glow: 'shadow-[0_0_24px_-8px_var(--color-cyan)]' }
+
   return (
-    <Card>
-      <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-brand-2">{label}</span>
+    <div className={`rounded-2xl border ${accent.border} bg-panel/80 p-4 ${accent.glow}`}>
+      <span className={`mb-3 block font-display text-xl tracking-wide ${accent.text}`}>{label}</span>
       <Select value={playerId} onChange={(e) => onPlayerChange(e.target.value)} className="mb-3 w-full">
         <option value="">Elegir jugador...</option>
         {players
@@ -42,11 +51,11 @@ function PlayerPanel({
       {playerId ? (
         <CharacterPicker options={gameCharacters} selected={characters} onChange={onCharactersChange} />
       ) : (
-        <p className="rounded-md border border-dashed border-edge/50 p-4 text-center text-xs text-white/40">
-          Elegí un jugador para poder elegir sus personajes
+        <p className="rounded-xl border border-dashed border-edge/50 p-4 text-center text-xs text-white/40">
+          Elegí un jugador para armar su equipo
         </p>
       )}
-    </Card>
+    </div>
   )
 }
 
@@ -63,7 +72,12 @@ export default function NewFightPage() {
 
   const gameCharacters = GAMES[gameId].characters
 
-  const canStart = player1Id && player2Id && player1Id !== player2Id && char1.length > 0 && char2.length > 0
+  const canStart =
+    player1Id &&
+    player2Id &&
+    player1Id !== player2Id &&
+    char1.length === REQUIRED_CHARACTERS &&
+    char2.length === REQUIRED_CHARACTERS
 
   function handleGameChange(next: GameId) {
     setGameId(next)
@@ -104,8 +118,8 @@ export default function NewFightPage() {
     <div className="flex flex-1 flex-col">
       <AppHeader title="Crear pelea" onBack="home" />
       <div className="flex-1 px-4 py-5">
-        <div className="mb-4">
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/50">Juego</label>
+        <div className="mb-5">
+          <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-white/50">Juego</label>
           <Select value={gameId} onChange={(e) => handleGameChange(e.target.value as GameId)} className="w-full">
             {GAME_LIST.map((g) => (
               <option key={g.id} value={g.id}>
@@ -115,9 +129,10 @@ export default function NewFightPage() {
           </Select>
         </div>
 
-        <div className="relative">
+        <div className="relative space-y-6">
           <PlayerPanel
             label="Jugador 1"
+            side="p1"
             players={players}
             excludeId={player2Id}
             playerId={player1Id}
@@ -130,12 +145,12 @@ export default function NewFightPage() {
             gameCharacters={gameCharacters}
           />
 
-          <div className="relative z-10 -my-5 flex justify-center">
+          <div className="relative z-10 -my-9 flex justify-center">
             <button
               type="button"
               onClick={handleStart}
               disabled={!canStart}
-              className="flex h-16 w-16 flex-col items-center justify-center rounded-full border-4 border-ink bg-brand text-center font-display text-[11px] font-bold leading-tight text-ink shadow-lg shadow-black/50 transition-transform disabled:cursor-not-allowed disabled:opacity-40 enabled:active:scale-95"
+              className="flex h-[4.5rem] w-[4.5rem] flex-col items-center justify-center rounded-full border-4 border-ink bg-gradient-to-br from-brand to-brand-2 text-center font-display text-sm leading-tight text-ink shadow-[0_0_28px_-4px_var(--color-brand)] transition-transform disabled:cursor-not-allowed disabled:from-edge disabled:to-edge disabled:opacity-50 disabled:shadow-none enabled:active:scale-95"
             >
               <span>COMEN</span>
               <span>ZAR!</span>
@@ -144,6 +159,7 @@ export default function NewFightPage() {
 
           <PlayerPanel
             label="Jugador 2"
+            side="p2"
             players={players}
             excludeId={player1Id}
             playerId={player2Id}

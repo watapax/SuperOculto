@@ -17,19 +17,19 @@ export default function AppHeader({
   }
 
   return (
-    <header className="sticky top-0 z-10 border-b border-edge/60 bg-panel/90 backdrop-blur">
-      <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3">
+    <header className="sticky top-0 z-10 border-b border-edge/60 bg-ink/85 backdrop-blur-md">
+      <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3.5">
         {onBack !== false && (
           <button
             type="button"
             onClick={handleBack}
             aria-label="Volver"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-white/70 hover:bg-panel-2 hover:text-accent"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-white/70 transition-colors hover:bg-panel-2 hover:text-accent"
           >
             ←
           </button>
         )}
-        <h1 className="flex-1 truncate font-display text-lg text-brand-2">{title}</h1>
+        <h1 className="flex-1 truncate font-display text-2xl tracking-wide text-brand-2">{title}</h1>
         {right}
       </div>
     </header>

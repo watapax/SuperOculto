@@ -25,7 +25,7 @@ const padded = await sharp(svg, { density: 384 })
     bottom: Math.round(maskableSize * 0.15),
     left: Math.round(maskableSize * 0.15),
     right: Math.round(maskableSize * 0.15),
-    background: '#7a1010',
+    background: '#4a0e2e',
   })
   .png()
   .toFile(path.join(outDir, 'icon-maskable-512.png'));

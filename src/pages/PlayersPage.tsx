@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import AppHeader from '../components/AppHeader'
 import CharacterAvatar from '../components/CharacterAvatar'
-import { Button, Card, Input } from '../components/ui'
+import { Button, Card, Input, Label } from '../components/ui'
 import { useStore } from '../store/useStore'
 
 export default function PlayersPage() {
@@ -29,11 +29,9 @@ export default function PlayersPage() {
     <div className="flex flex-1 flex-col">
       <AppHeader title="Jugadores" onBack="home" />
       <div className="flex-1 px-4 py-5">
-        <Card className="mb-5 flex items-end gap-2">
+        <Card className="mb-5 flex items-end gap-2 border-cyan/30 shadow-[0_0_24px_-10px_var(--color-cyan)]">
           <div className="flex-1">
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/50">
-              Nuevo jugador
-            </label>
+            <Label>Nuevo jugador</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -79,11 +77,11 @@ export default function PlayersPage() {
                   }}
                 />
               ) : (
-                <span className="flex-1 font-semibold">{player.name}</span>
+                <span className="flex-1 font-display text-lg tracking-wide">{player.name}</span>
               )}
               <button
                 type="button"
-                className="text-xs text-white/50 hover:text-accent"
+                className="text-xs font-bold uppercase tracking-wide text-white/50 hover:text-accent"
                 onClick={() => {
                   setEditingId(player.id)
                   setEditingName(player.name)
@@ -93,7 +91,7 @@ export default function PlayersPage() {
               </button>
               <button
                 type="button"
-                className="text-xs text-red-400 hover:text-red-300"
+                className="text-xs font-bold uppercase tracking-wide text-brand hover:text-brand-2"
                 onClick={() => {
                   if (confirm(`¿Eliminar a ${player.name}? Esto también borra sus peleas.`)) {
                     removePlayer(player.id).catch((err) =>
