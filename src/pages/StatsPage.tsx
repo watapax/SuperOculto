@@ -1,0 +1,106 @@
+import AppHeader from '../components/AppHeader'
+import { Card } from '../components/ui'
+import { GAMES } from '../data/kofData'
+import { computeCharacterStats, computeHitStandings } from '../lib/stats'
+import { useStore } from '../store/useStore'
+
+export default function StatsPage() {
+  const players = useStore((s) => s.players)
+  const fights = useStore((s) => s.fights)
+
+  const finished = fights.filter((f) => f.status === 'finished')
+  const standings = computeHitStandings(players, finished)
+  const characterStats = computeCharacterStats(finished).slice(0, 15)
+  const recent = [...finished].sort((a, b) => (b.finishedAt ?? 0) - (a.finishedAt ?? 0)).slice(0, 15)
+
+  function playerName(id: string) {
+    return players.find((p) => p.id === id)?.name ?? '???'
+  }
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <AppHeader title="Estadísticas" onBack="home" />
+      <div className="flex-1 px-4 py-5">
+        {finished.length === 0 ? (
+          <p className="text-center text-sm text-white/50">
+            Todavía no hay peleas finalizadas. Creá una pelea y tocá los golpes recibidos para empezar a sumar.
+          </p>
+        ) : (
+          <>
+            <h2 className="mb-2 font-display text-sm uppercase tracking-wide text-brand-2">
+              Más golpeados 🥊
+            </h2>
+            <Card className="mb-6 overflow-x-auto !p-0">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-edge/50 text-left text-xs uppercase tracking-wide text-white/50">
+                    <th className="py-2 pl-3 pr-2">#</th>
+                    <th className="py-2 pr-2">Jugador</th>
+                    <th className="py-2 pr-2 text-right">Peleas</th>
+                    <th className="py-2 pr-2 text-right">Golpes</th>
+                    <th className="py-2 pr-3 text-right">Prom.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {standings.map((row, i) => (
+                    <tr key={row.player.id} className="border-b border-edge/20 last:border-0">
+                      <td className="py-2 pl-3 pr-2 text-white/50">{i + 1}</td>
+                      <td className="py-2 pr-2 font-semibold">{row.player.name}</td>
+                      <td className="py-2 pr-2 text-right text-white/60">{row.fights}</td>
+                      <td className="py-2 pr-2 text-right font-bold text-accent">{row.hitsReceived}</td>
+                      <td className="py-2 pr-3 text-right text-white/60">{row.avgHitsPerFight.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+
+            <h2 className="mb-2 font-display text-sm uppercase tracking-wide text-brand-2">
+              Personajes más usados
+            </h2>
+            <Card className="mb-6 overflow-x-auto !p-0">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-edge/50 text-left text-xs uppercase tracking-wide text-white/50">
+                    <th className="py-2 pl-3 pr-2">Personaje</th>
+                    <th className="py-2 pr-3 text-right">Usos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {characterStats.map((c) => (
+                    <tr key={c.character} className="border-b border-edge/20 last:border-0">
+                      <td className="py-2 pl-3 pr-2 font-semibold">{c.character}</td>
+                      <td className="py-2 pr-3 text-right text-white/60">{c.timesUsed}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+
+            <h2 className="mb-2 font-display text-sm uppercase tracking-wide text-brand-2">Últimas peleas</h2>
+            <div className="space-y-2">
+              {recent.map((f) => {
+                const [s1, s2] = f.sides
+                const leader = s1.hits === s2.hits ? null : s1.hits > s2.hits ? 0 : 1
+                return (
+                  <Card key={f.id} className="flex items-center justify-between gap-2 !p-3 text-sm">
+                    <span className="rounded bg-panel-2 px-2 py-0.5 text-xs text-white/50">
+                      {GAMES[f.gameId].name}
+                    </span>
+                    <span className={leader === 0 ? 'font-bold text-accent' : 'text-white/70'}>
+                      {playerName(s1.playerId)} ({s1.hits})
+                    </span>
+                    <span className="text-white/30">vs</span>
+                    <span className={leader === 1 ? 'font-bold text-accent' : 'text-white/70'}>
+                      {playerName(s2.playerId)} ({s2.hits})
+                    </span>
+                  </Card>
+                )
+              })}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

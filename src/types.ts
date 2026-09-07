@@ -22,31 +22,17 @@ export interface Player {
   createdAt: number
 }
 
-/** Personajes asignados a un jugador para un juego puntual. */
-export interface PlayerGameProfile {
+export interface FightSide {
   playerId: string
-  gameId: GameId
   characters: string[]
+  hits: number
 }
 
-export interface Season {
+export interface Fight {
   id: string
-  name: string
-  createdAt: number
-  archived: boolean
-}
-
-export interface Match {
-  id: string
-  seasonId: string
   gameId: GameId
   createdAt: number
-  player1Id: string
-  player1Character: string
-  player1Score: number
-  player2Id: string
-  player2Character: string
-  player2Score: number
-  winnerId: string
-  notes?: string
+  finishedAt: number | null
+  status: 'live' | 'finished'
+  sides: [FightSide, FightSide]
 }

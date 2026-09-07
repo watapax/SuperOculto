@@ -1,19 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { GameId, Match, Player, PlayerGameProfile, Season } from '../types'
+import type { Fight, GameId, Player } from '../types'
 
 function makeId() {
   return crypto.randomUUID()
 }
 
-const EMPTY_CHARACTERS: string[] = []
-
 interface State {
   players: Player[]
-  seasons: Season[]
-  activeSeasonId: string | null
-  profiles: PlayerGameProfile[]
-  matches: Match[]
+  fights: Fight[]
 }
 
 interface Actions {
@@ -21,28 +16,25 @@ interface Actions {
   renamePlayer: (id: string, name: string) => void
   removePlayer: (id: string) => void
 
-  addSeason: (name: string) => void
-  renameSeason: (id: string, name: string) => void
-  setActiveSeason: (id: string) => void
-  archiveSeason: (id: string) => void
+  createFight: (params: {
+    gameId: GameId
+    player1Id: string
+    player1Characters: string[]
+    player2Id: string
+    player2Characters: string[]
+  }) => string
 
-  setPlayerCharacters: (playerId: string, gameId: GameId, characters: string[]) => void
-  getPlayerCharacters: (playerId: string, gameId: GameId) => string[]
-
-  addMatch: (match: Omit<Match, 'id' | 'createdAt'>) => void
-  removeMatch: (id: string) => void
+  addHit: (fightId: string, side: 0 | 1) => void
+  undoHit: (fightId: string, side: 0 | 1) => void
+  finishFight: (fightId: string) => void
+  discardFight: (fightId: string) => void
 }
-
-const DEFAULT_SEASON_ID = makeId()
 
 export const useStore = create<State & Actions>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       players: [],
-      seasons: [{ id: DEFAULT_SEASON_ID, name: 'Temporada 1', createdAt: Date.now(), archived: false }],
-      activeSeasonId: DEFAULT_SEASON_ID,
-      profiles: [],
-      matches: [],
+      fights: [],
 
       addPlayer: (name) =>
         set((s) => ({
@@ -57,57 +49,58 @@ export const useStore = create<State & Actions>()(
       removePlayer: (id) =>
         set((s) => ({
           players: s.players.filter((p) => p.id !== id),
-          profiles: s.profiles.filter((p) => p.playerId !== id),
-          matches: s.matches.filter((m) => m.player1Id !== id && m.player2Id !== id),
+          fights: s.fights.filter((f) => f.sides[0].playerId !== id && f.sides[1].playerId !== id),
         })),
 
-      addSeason: (name) =>
-        set((s) => {
-          const id = makeId()
-          return {
-            seasons: [...s.seasons, { id, name: name.trim(), createdAt: Date.now(), archived: false }],
-            activeSeasonId: id,
-          }
-        }),
+      createFight: ({ gameId, player1Id, player1Characters, player2Id, player2Characters }) => {
+        const id = makeId()
+        const fight: Fight = {
+          id,
+          gameId,
+          createdAt: Date.now(),
+          finishedAt: null,
+          status: 'live',
+          sides: [
+            { playerId: player1Id, characters: player1Characters, hits: 0 },
+            { playerId: player2Id, characters: player2Characters, hits: 0 },
+          ],
+        }
+        set((s) => ({ fights: [...s.fights, fight] }))
+        return id
+      },
 
-      renameSeason: (id, name) =>
+      addHit: (fightId, side) =>
         set((s) => ({
-          seasons: s.seasons.map((se) => (se.id === id ? { ...se, name: name.trim() } : se)),
+          fights: s.fights.map((f) => {
+            if (f.id !== fightId) return f
+            const sides = [...f.sides] as [Fight['sides'][0], Fight['sides'][1]]
+            sides[side] = { ...sides[side], hits: sides[side].hits + 1 }
+            return { ...f, sides }
+          }),
         })),
 
-      setActiveSeason: (id) => set({ activeSeasonId: id }),
-
-      archiveSeason: (id) =>
+      undoHit: (fightId, side) =>
         set((s) => ({
-          seasons: s.seasons.map((se) => (se.id === id ? { ...se, archived: true } : se)),
+          fights: s.fights.map((f) => {
+            if (f.id !== fightId) return f
+            const sides = [...f.sides] as [Fight['sides'][0], Fight['sides'][1]]
+            sides[side] = { ...sides[side], hits: Math.max(0, sides[side].hits - 1) }
+            return { ...f, sides }
+          }),
         })),
 
-      setPlayerCharacters: (playerId, gameId, characters) =>
-        set((s) => {
-          const existing = s.profiles.find((p) => p.playerId === playerId && p.gameId === gameId)
-          if (existing) {
-            return {
-              profiles: s.profiles.map((p) =>
-                p.playerId === playerId && p.gameId === gameId ? { ...p, characters } : p,
-              ),
-            }
-          }
-          return { profiles: [...s.profiles, { playerId, gameId, characters }] }
-        }),
-
-      getPlayerCharacters: (playerId, gameId) =>
-        get().profiles.find((p) => p.playerId === playerId && p.gameId === gameId)?.characters ?? EMPTY_CHARACTERS,
-
-      addMatch: (match) =>
+      finishFight: (fightId) =>
         set((s) => ({
-          matches: [...s.matches, { ...match, id: makeId(), createdAt: Date.now() }],
+          fights: s.fights.map((f) =>
+            f.id === fightId ? { ...f, status: 'finished', finishedAt: Date.now() } : f,
+          ),
         })),
 
-      removeMatch: (id) =>
+      discardFight: (fightId) =>
         set((s) => ({
-          matches: s.matches.filter((m) => m.id !== id),
+          fights: s.fights.filter((f) => f.id !== fightId),
         })),
     }),
-    { name: 'kof-torneo-storage' },
+    { name: 'super-ocultos-storage' },
   ),
 )

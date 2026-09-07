@@ -13,9 +13,9 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         id: '/',
-        name: 'KOF Torneo Manager',
-        short_name: 'KOF Torneo',
-        description: 'Gestión de puntajes y estadísticas para campeonatos de The King of Fighters',
+        name: 'Super Ocultos',
+        short_name: 'Super Ocultos',
+        description: 'Contador de golpes especiales para el campeonato Super Ocultos de The King of Fighters',
         theme_color: '#7a1010',
         background_color: '#120303',
         display: 'standalone',
