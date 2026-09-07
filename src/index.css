@@ -121,3 +121,24 @@ body {
 .animate-pop {
   animation: pop-in 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
+
+/* Comic/poster-style lettering: thick outline + drop shadow, optional gradient fill via --fill-from/--fill-to */
+.text-comic {
+  -webkit-text-stroke: 2.5px #0a0714;
+  text-stroke: 2.5px #0a0714;
+  text-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.55),
+    0 7px 10px rgba(0, 0, 0, 0.5);
+}
+
+.text-comic-fill {
+  background-image: linear-gradient(180deg, var(--fill-from), var(--fill-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.halftone-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.9) 1px, transparent 1.6px);
+  background-size: 7px 7px;
+}
