@@ -80,7 +80,7 @@ export const GAMES: Record<GameId, GameInfo> = {
       'Heavy D!', 'Lucky Glauber', 'Brian Battler',
       'Geese Howard', 'Wolfgang Krauser', 'Mr. Big',
       'Yashiro Nanakase', 'Shermie', 'Chris',
-      'Eiji Kisaragi', 'Billy Kane', 'Saisyu Kusanagi',
+      'Billy Kane', 'Saisyu Kusanagi',
       'Shingo Yabuki', 'Rugal Bernstein',
     ],
   },

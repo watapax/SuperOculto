@@ -2,11 +2,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
 import PlayerZone from '../components/PlayerZone'
 import { GAMES } from '../data/kofData'
+import { shortGameYear } from '../lib/gameLabel'
 import { useStore } from '../store/useStore'
-
-function shortYear(year: number) {
-  return year < 2000 ? `'${year % 100}` : `${year}`
-}
 
 export default function LiveFightPage() {
   const { id } = useParams<{ id: string }>()
@@ -60,7 +57,7 @@ export default function LiveFightPage() {
   return (
     <div className="mx-auto flex h-dvh max-w-md flex-col">
       <AppHeader
-        title={`KOF ${shortYear(game.year)}`}
+        title={`KOF ${shortGameYear(game.year)}`}
         onBack={handleBack}
         right={
           <button

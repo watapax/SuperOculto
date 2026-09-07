@@ -68,7 +68,13 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
       {characters.map((c) => (
         <div key={c} className="relative h-full overflow-hidden rounded-lg">
           <CharacterAvatar name={c} selected character fill />
-          <span className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/85 via-black/30 to-transparent px-1 pb-1.5 pt-6 text-center text-xs font-bold text-white">
+          <span
+            className={`pointer-events-none absolute inset-x-0 truncate text-center text-xs font-bold text-white ${
+              isBottom
+                ? 'bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent px-1 pb-1.5 pt-6'
+                : 'top-0 bg-gradient-to-b from-black/85 via-black/30 to-transparent px-1 pb-6 pt-1.5'
+            }`}
+          >
             {shortCharacterName(c)}
           </span>
         </div>
