@@ -66,7 +66,7 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
     <div className="grid flex-1 grid-cols-3 items-center gap-2 p-4">
       {characters.map((c) => (
         <div key={c} className="flex flex-col items-center gap-1.5">
-          <CharacterAvatar name={c} size="lg" selected />
+          <CharacterAvatar name={c} size="lg" selected character />
           <span className="max-w-[72px] truncate text-center text-[10px] font-medium text-white/60">{c}</span>
         </div>
       ))}

@@ -1,3 +1,5 @@
+import { getCharacterImageUrl } from '../data/characterImages'
+
 const PALETTE = [
   ['#ff3b5c', '#ff8a3d'],
   ['#0891b2', '#22d3ee'],
@@ -41,10 +43,13 @@ export default function CharacterAvatar({
   name,
   size = 'md',
   selected = false,
+  character = false,
 }: {
   name: string
   size?: 'sm' | 'md' | 'lg'
   selected?: boolean
+  /** Only true when `name` is an actual KOF character (not a player's name) — enables the real portrait lookup. */
+  character?: boolean
 }) {
   const [from, to] = PALETTE[hashString(name) % PALETTE.length]
   const sizeClass = {
@@ -52,6 +57,7 @@ export default function CharacterAvatar({
     md: 'h-16 w-16 text-xl',
     lg: 'h-[4.5rem] w-[4.5rem] text-2xl',
   }[size]
+  const imageUrl = character ? getCharacterImageUrl(name) : undefined
 
   return (
     <div
@@ -59,16 +65,22 @@ export default function CharacterAvatar({
         selected ? 'scale-105 ring-[3px] ring-accent' : 'ring-1 ring-white/10'
       }`}
       style={{
-        background: `linear-gradient(150deg, ${from}, ${to})`,
+        background: imageUrl ? undefined : `linear-gradient(150deg, ${from}, ${to})`,
         boxShadow: selected
           ? `0 0 0 3px rgba(10,7,20,0.9), 0 0 18px 2px ${to}99, inset 0 1px 0 rgba(255,255,255,0.35)`
           : `0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25)`,
       }}
       title={name}
     >
-      <FighterSilhouette />
-      <span className="relative drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{initials(name)}</span>
-      <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-gradient-to-b from-white/25 to-transparent" />
+      {imageUrl ? (
+        <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+      ) : (
+        <>
+          <FighterSilhouette />
+          <span className="relative drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{initials(name)}</span>
+          <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-gradient-to-b from-white/25 to-transparent" />
+        </>
+      )}
     </div>
   )
 }

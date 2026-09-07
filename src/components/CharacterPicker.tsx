@@ -67,7 +67,7 @@ export default function CharacterPicker({
                     : 'hover:bg-panel-2 active:scale-95'
               }`}
             >
-              <CharacterAvatar name={c} size="sm" selected={active} />
+              <CharacterAvatar name={c} size="sm" selected={active} character />
               <span className="line-clamp-2 text-[11px] font-medium leading-tight text-white/80">{c}</span>
             </button>
           )
