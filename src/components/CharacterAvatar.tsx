@@ -44,25 +44,30 @@ export default function CharacterAvatar({
   size = 'md',
   selected = false,
   character = false,
+  fill = false,
 }: {
   name: string
   size?: 'sm' | 'md' | 'lg'
   selected?: boolean
   /** Only true when `name` is an actual KOF character (not a player's name) — enables the real portrait lookup. */
   character?: boolean
+  /** Fills the parent container instead of a fixed square size, zoomed/cropped — for tall strip layouts. */
+  fill?: boolean
 }) {
   const [from, to] = PALETTE[hashString(name) % PALETTE.length]
-  const sizeClass = {
-    sm: 'h-11 w-11 text-sm',
-    md: 'h-16 w-16 text-xl',
-    lg: 'h-[4.5rem] w-[4.5rem] text-2xl',
-  }[size]
+  const sizeClass = fill
+    ? 'h-full w-full text-4xl'
+    : {
+        sm: 'h-14 w-14 text-base',
+        md: 'h-16 w-16 text-xl',
+        lg: 'h-[4.5rem] w-[4.5rem] text-2xl',
+      }[size]
   const imageUrl = character ? getCharacterImageUrl(name) : undefined
 
   return (
     <div
-      className={`relative flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden rounded-2xl font-display text-white transition-transform ${
-        selected ? 'scale-105 ring-[3px] ring-accent' : 'ring-1 ring-white/10'
+      className={`relative flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden ${fill ? 'rounded-lg' : 'rounded-2xl'} font-display text-white transition-transform ${
+        selected ? `${fill ? '' : 'scale-105'} ring-[3px] ring-accent` : 'ring-1 ring-white/10'
       }`}
       style={{
         background: imageUrl ? undefined : `linear-gradient(150deg, ${from}, ${to})`,
@@ -73,12 +78,16 @@ export default function CharacterAvatar({
       title={name}
     >
       {imageUrl ? (
-        <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+        <img
+          src={imageUrl}
+          alt={name}
+          className={`h-full w-full object-cover object-top ${fill ? 'scale-[1.35]' : ''}`}
+        />
       ) : (
         <>
           <FighterSilhouette />
           <span className="relative drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{initials(name)}</span>
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-gradient-to-b from-white/25 to-transparent" />
+          <span className={`pointer-events-none absolute inset-x-0 top-0 h-1/2 ${fill ? 'rounded-t-lg' : 'rounded-t-2xl'} bg-gradient-to-b from-white/25 to-transparent`} />
         </>
       )}
     </div>

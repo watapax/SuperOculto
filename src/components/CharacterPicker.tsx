@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import CharacterAvatar from './CharacterAvatar'
+import { shortCharacterName } from '../lib/characterName'
 import { Input } from './ui'
 
 const MAX_CHARACTERS = 3
@@ -49,7 +50,7 @@ export default function CharacterPicker({
       {atMax && (
         <p className="mb-2 text-[11px] font-medium text-lime">Equipo completo — sacá uno para elegir otro.</p>
       )}
-      <div className="grid max-h-64 grid-cols-3 gap-2 overflow-y-auto rounded-xl border border-edge/50 bg-ink/40 p-2">
+      <div className="grid max-h-72 grid-cols-4 gap-1 overflow-y-auto rounded-xl border border-edge/50 bg-ink/40 p-1.5">
         {filtered.map((c) => {
           const active = selected.includes(c)
           const disabled = !active && atMax
@@ -59,7 +60,7 @@ export default function CharacterPicker({
               key={c}
               onClick={() => toggle(c)}
               disabled={disabled}
-              className={`flex flex-col items-center gap-1 rounded-xl p-1.5 text-center transition-all ${
+              className={`flex flex-col items-center gap-0.5 rounded-lg p-1 text-center transition-all ${
                 active
                   ? 'bg-brand/20'
                   : disabled
@@ -68,7 +69,9 @@ export default function CharacterPicker({
               }`}
             >
               <CharacterAvatar name={c} size="sm" selected={active} character />
-              <span className="line-clamp-2 text-[11px] font-medium leading-tight text-white/80">{c}</span>
+              <span className="line-clamp-1 text-[11px] font-medium leading-tight text-white/80">
+                {shortCharacterName(c)}
+              </span>
             </button>
           )
         })}

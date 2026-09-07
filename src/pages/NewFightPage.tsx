@@ -150,10 +150,9 @@ export default function NewFightPage() {
               type="button"
               onClick={handleStart}
               disabled={!canStart}
-              className="flex h-[4.5rem] w-[4.5rem] flex-col items-center justify-center rounded-full border-4 border-ink bg-gradient-to-br from-brand to-brand-2 text-center font-display text-sm leading-tight text-ink shadow-[0_0_28px_-4px_var(--color-brand)] transition-transform disabled:cursor-not-allowed disabled:from-edge disabled:to-edge disabled:opacity-50 disabled:shadow-none enabled:active:scale-95"
+              className="flex h-20 w-20 flex-col items-center justify-center rounded-full border-4 border-ink bg-gradient-to-br from-brand to-brand-2 text-center font-display text-base leading-tight tracking-wide text-ink shadow-[0_0_28px_-4px_var(--color-brand)] transition-transform disabled:cursor-not-allowed disabled:from-edge disabled:to-edge disabled:opacity-50 disabled:shadow-none enabled:active:scale-95"
             >
-              <span>COMEN</span>
-              <span>ZAR!</span>
+              PELEAR!
             </button>
           </div>
 

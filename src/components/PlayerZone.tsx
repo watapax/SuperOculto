@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import CharacterAvatar from './CharacterAvatar'
 import { useTapEffects } from '../hooks/useTapEffects'
+import { shortCharacterName } from '../lib/characterName'
 
 interface Props {
   position: 'top' | 'bottom'
@@ -63,11 +64,13 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
   )
 
   const grid = (
-    <div className="grid flex-1 grid-cols-3 items-center gap-2 p-4">
+    <div className="grid flex-1 grid-cols-3 gap-1 p-1">
       {characters.map((c) => (
-        <div key={c} className="flex flex-col items-center gap-1.5">
-          <CharacterAvatar name={c} size="lg" selected character />
-          <span className="max-w-[72px] truncate text-center text-[10px] font-medium text-white/60">{c}</span>
+        <div key={c} className="relative h-full overflow-hidden rounded-lg">
+          <CharacterAvatar name={c} selected character fill />
+          <span className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/85 via-black/30 to-transparent px-1 pb-1.5 pt-6 text-center text-xs font-bold text-white">
+            {shortCharacterName(c)}
+          </span>
         </div>
       ))}
     </div>

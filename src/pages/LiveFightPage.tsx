@@ -73,7 +73,7 @@ export default function LiveFightPage() {
         }
       />
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="relative flex flex-1 flex-col overflow-hidden">
         <PlayerZone
           position="top"
           playerName={p1?.name ?? 'Jugador 1'}
@@ -83,13 +83,7 @@ export default function LiveFightPage() {
           onUndo={() => undoHit(fight.id, 0)}
         />
 
-        <div className="relative z-20 flex items-center justify-center gap-4 border-y border-edge/60 bg-ink px-4 py-3">
-          <span className="font-display text-lg tracking-wide text-brand-2">KOF</span>
-          <span className="font-display text-3xl leading-none text-accent drop-shadow-[0_0_14px_rgba(255,214,10,0.7)]">
-            VS
-          </span>
-          <span className="font-display text-lg tracking-wide text-cyan">{shortYear(game.year)}</span>
-        </div>
+        <div className="relative z-20 h-1 bg-ink shadow-[0_0_12px_2px_rgba(0,0,0,0.6)]" />
 
         <PlayerZone
           position="bottom"
@@ -99,6 +93,18 @@ export default function LiveFightPage() {
           onHit={() => addHit(fight.id, 1)}
           onUndo={() => undoHit(fight.id, 1)}
         />
+
+        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
+          <span
+            className="font-display text-[7rem] leading-none text-accent"
+            style={{
+              WebkitTextStroke: '3px #0a0714',
+              textShadow: '0 0 50px rgba(255,214,10,0.85), 0 4px 16px rgba(0,0,0,0.9)',
+            }}
+          >
+            VS
+          </span>
+        </div>
       </div>
     </div>
   )
