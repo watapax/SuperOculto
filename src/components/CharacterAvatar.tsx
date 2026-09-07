@@ -1,4 +1,5 @@
 import { getCharacterImageUrl } from '../data/characterImages'
+import FighterSilhouette from './FighterSilhouette'
 
 const PALETTE = [
   ['#ff3b5c', '#ff8a3d'],
@@ -28,41 +29,35 @@ function initials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-/** Generic fighting-stance pictogram — original silhouette, not tied to any specific character. */
-function FighterSilhouette() {
-  return (
-    <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full opacity-[0.16]" fill="currentColor">
-      <circle cx="52" cy="20" r="10" />
-      <path d="M40 34 L64 34 L70 58 L58 58 L58 90 L46 90 L46 62 L34 78 L26 70 L40 50 Z" />
-      <path d="M64 34 L86 22 L91 30 L72 44 Z" />
-    </svg>
-  )
-}
-
 export default function CharacterAvatar({
   name,
   size = 'md',
   selected = false,
   character = false,
+  fill = false,
 }: {
   name: string
   size?: 'sm' | 'md' | 'lg'
   selected?: boolean
   /** Only true when `name` is an actual KOF character (not a player's name) — enables the real portrait lookup. */
   character?: boolean
+  /** Fills the parent container instead of a fixed square size, zoomed/cropped — for tall strip layouts. */
+  fill?: boolean
 }) {
   const [from, to] = PALETTE[hashString(name) % PALETTE.length]
-  const sizeClass = {
-    sm: 'h-11 w-11 text-sm',
-    md: 'h-16 w-16 text-xl',
-    lg: 'h-[4.5rem] w-[4.5rem] text-2xl',
-  }[size]
+  const sizeClass = fill
+    ? 'h-full w-full text-4xl'
+    : {
+        sm: 'h-14 w-14 text-base',
+        md: 'h-16 w-16 text-xl',
+        lg: 'h-[4.5rem] w-[4.5rem] text-2xl',
+      }[size]
   const imageUrl = character ? getCharacterImageUrl(name) : undefined
 
   return (
     <div
-      className={`relative flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden rounded-2xl font-display text-white transition-transform ${
-        selected ? 'scale-105 ring-[3px] ring-accent' : 'ring-1 ring-white/10'
+      className={`relative flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden ${fill ? 'rounded-lg' : 'rounded-2xl'} font-display text-white transition-transform ${
+        selected ? `${fill ? '' : 'scale-105'} ring-[3px] ring-accent` : 'ring-1 ring-white/10'
       }`}
       style={{
         background: imageUrl ? undefined : `linear-gradient(150deg, ${from}, ${to})`,
@@ -73,12 +68,16 @@ export default function CharacterAvatar({
       title={name}
     >
       {imageUrl ? (
-        <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+        <img
+          src={imageUrl}
+          alt={name}
+          className={`h-full w-full object-cover object-top ${fill ? 'scale-[1.35]' : ''}`}
+        />
       ) : (
         <>
-          <FighterSilhouette />
+          <FighterSilhouette className="absolute inset-0 h-full w-full opacity-[0.16]" />
           <span className="relative drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{initials(name)}</span>
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-gradient-to-b from-white/25 to-transparent" />
+          <span className={`pointer-events-none absolute inset-x-0 top-0 h-1/2 ${fill ? 'rounded-t-lg' : 'rounded-t-2xl'} bg-gradient-to-b from-white/25 to-transparent`} />
         </>
       )}
     </div>

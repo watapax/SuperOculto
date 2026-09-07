@@ -4,10 +4,54 @@ import AppHeader from '../components/AppHeader'
 import CharacterPicker from '../components/CharacterPicker'
 import { Select } from '../components/ui'
 import { GAME_LIST, GAMES } from '../data/kofData'
+import { shortGameYear } from '../lib/gameLabel'
 import { useStore } from '../store/useStore'
 import type { GameId } from '../types'
 
 const REQUIRED_CHARACTERS = 3
+
+const GAME_ACCENTS = [
+  ['#ff3b5c', '#ff8a3d'],
+  ['#0891b2', '#22d3ee'],
+  ['#7c3aed', '#b389ff'],
+  ['#16a34a', '#9fef00'],
+  ['#c026d3', '#ff6bd6'],
+  ['#ea580c', '#ffd60a'],
+  ['#1d4ed8', '#38bdf8'],
+  ['#be123c', '#fb7185'],
+  ['#0d9488', '#5eead4'],
+]
+
+function GameSelectStep({ onSelect }: { onSelect: (id: GameId) => void }) {
+  return (
+    <div className="flex-1 px-4 py-5">
+      <p className="mb-4 text-center text-sm text-white/60">Elegí el juego para esta pelea</p>
+      <div className="grid grid-cols-3 gap-3">
+        {GAME_LIST.map((g, i) => {
+          const [from, to] = GAME_ACCENTS[i % GAME_ACCENTS.length]
+          return (
+            <button
+              key={g.id}
+              type="button"
+              onClick={() => onSelect(g.id)}
+              className="relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 p-2 text-center shadow-lg shadow-black/40 transition-transform active:scale-95"
+              style={{ background: `linear-gradient(155deg, ${from}, ${to})` }}
+            >
+              <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent" />
+              <span className="relative font-display text-[10px] tracking-[0.25em] text-white/80">KOF</span>
+              <span className="relative font-display text-3xl leading-none text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+                {shortGameYear(g.year)}
+              </span>
+              <span className="relative mt-1 text-[9px] font-medium text-white/70">
+                {g.characters.length} personajes
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 function PlayerPanel({
   label,
@@ -64,29 +108,32 @@ export default function NewFightPage() {
   const createFight = useStore((s) => s.createFight)
   const navigate = useNavigate()
 
-  const [gameId, setGameId] = useState<GameId>(GAME_LIST[0].id)
+  const [step, setStep] = useState<'game' | 'players'>('game')
+  const [gameId, setGameId] = useState<GameId | null>(null)
   const [player1Id, setPlayer1Id] = useState('')
   const [player2Id, setPlayer2Id] = useState('')
   const [char1, setChar1] = useState<string[]>([])
   const [char2, setChar2] = useState<string[]>([])
 
-  const gameCharacters = GAMES[gameId].characters
+  const gameCharacters = gameId ? GAMES[gameId].characters : []
 
   const canStart =
+    gameId &&
     player1Id &&
     player2Id &&
     player1Id !== player2Id &&
     char1.length === REQUIRED_CHARACTERS &&
     char2.length === REQUIRED_CHARACTERS
 
-  function handleGameChange(next: GameId) {
-    setGameId(next)
+  function handleSelectGame(id: GameId) {
+    setGameId(id)
     setChar1([])
     setChar2([])
+    setStep('players')
   }
 
   async function handleStart() {
-    if (!canStart) return
+    if (!canStart || !gameId) return
     try {
       const id = await createFight({
         gameId,
@@ -114,21 +161,19 @@ export default function NewFightPage() {
     )
   }
 
+  if (step === 'game' || !gameId) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <AppHeader title="Crear pelea" onBack="home" />
+        <GameSelectStep onSelect={handleSelectGame} />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-1 flex-col">
-      <AppHeader title="Crear pelea" onBack="home" />
+      <AppHeader title={`KOF ${shortGameYear(GAMES[gameId].year)}`} onBack={() => setStep('game')} />
       <div className="flex-1 px-4 py-5">
-        <div className="mb-5">
-          <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-white/50">Juego</label>
-          <Select value={gameId} onChange={(e) => handleGameChange(e.target.value as GameId)} className="w-full">
-            {GAME_LIST.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </Select>
-        </div>
-
         <div className="relative space-y-6">
           <PlayerPanel
             label="Jugador 1"
@@ -150,10 +195,9 @@ export default function NewFightPage() {
               type="button"
               onClick={handleStart}
               disabled={!canStart}
-              className="flex h-[4.5rem] w-[4.5rem] flex-col items-center justify-center rounded-full border-4 border-ink bg-gradient-to-br from-brand to-brand-2 text-center font-display text-sm leading-tight text-ink shadow-[0_0_28px_-4px_var(--color-brand)] transition-transform disabled:cursor-not-allowed disabled:from-edge disabled:to-edge disabled:opacity-50 disabled:shadow-none enabled:active:scale-95"
+              className="flex h-20 w-20 flex-col items-center justify-center rounded-full border-4 border-ink bg-gradient-to-br from-brand to-brand-2 text-center font-display text-base leading-tight tracking-wide text-ink shadow-[0_0_28px_-4px_var(--color-brand)] transition-transform disabled:cursor-not-allowed disabled:from-edge disabled:to-edge disabled:opacity-50 disabled:shadow-none enabled:active:scale-95"
             >
-              <span>COMEN</span>
-              <span>ZAR!</span>
+              PELEAR!
             </button>
           </div>
 

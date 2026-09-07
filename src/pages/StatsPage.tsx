@@ -1,6 +1,7 @@
 import AppHeader from '../components/AppHeader'
 import { Card } from '../components/ui'
 import { GAMES } from '../data/kofData'
+import { shortCharacterName } from '../lib/characterName'
 import { computeCharacterStats, computeHitStandings } from '../lib/stats'
 import { useStore } from '../store/useStore'
 
@@ -67,7 +68,7 @@ export default function StatsPage() {
                 <tbody>
                   {characterStats.map((c) => (
                     <tr key={c.character} className="border-b border-edge/20 last:border-0">
-                      <td className="py-2.5 pl-3 pr-2 font-semibold">{c.character}</td>
+                      <td className="py-2.5 pl-3 pr-2 font-semibold">{shortCharacterName(c.character)}</td>
                       <td className="py-2.5 pr-3 text-right text-white/60">{c.timesUsed}</td>
                     </tr>
                   ))}
