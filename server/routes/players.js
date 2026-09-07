@@ -5,7 +5,7 @@ import { pool } from '../db.js'
 export const playersRouter = Router()
 
 function serializePlayer(row) {
-  return { id: row.id, name: row.name, createdAt: Number(row.created_at) }
+  return { id: row.id, name: row.name, createdAt: Number(row.created_at), avatar: row.avatar ?? null }
 }
 
 playersRouter.get('/', async (_req, res) => {
@@ -16,24 +16,33 @@ playersRouter.get('/', async (_req, res) => {
 playersRouter.post('/', async (req, res) => {
   const name = String(req.body?.name ?? '').trim()
   if (!name) return res.status(400).json({ error: 'name es requerido' })
+  const avatar = req.body?.avatar ? String(req.body.avatar) : null
 
   const id = randomUUID()
   const createdAt = Date.now()
   const { rows } = await pool.query(
-    'INSERT INTO players (id, name, created_at) VALUES ($1, $2, $3) RETURNING *',
-    [id, name, createdAt],
+    'INSERT INTO players (id, name, created_at, avatar) VALUES ($1, $2, $3, $4) RETURNING *',
+    [id, name, createdAt, avatar],
   )
   res.status(201).json(serializePlayer(rows[0]))
 })
 
 playersRouter.patch('/:id', async (req, res) => {
-  const name = String(req.body?.name ?? '').trim()
-  if (!name) return res.status(400).json({ error: 'name es requerido' })
+  const hasName = req.body?.name !== undefined
+  const hasAvatar = req.body?.avatar !== undefined
+  if (!hasName && !hasAvatar) return res.status(400).json({ error: 'nada que actualizar' })
 
-  const { rows } = await pool.query('UPDATE players SET name = $1 WHERE id = $2 RETURNING *', [
-    name,
-    req.params.id,
-  ])
+  const name = hasName ? String(req.body.name).trim() : null
+  if (hasName && !name) return res.status(400).json({ error: 'name es requerido' })
+  const avatar = hasAvatar ? (req.body.avatar ? String(req.body.avatar) : null) : null
+
+  const { rows } = await pool.query(
+    `UPDATE players SET
+      name = COALESCE($1, name),
+      avatar = CASE WHEN $2 THEN $3 ELSE avatar END
+    WHERE id = $4 RETURNING *`,
+    [name, hasAvatar, avatar, req.params.id],
+  )
   if (rows.length === 0) return res.status(404).json({ error: 'jugador no encontrado' })
   res.json(serializePlayer(rows[0]))
 })

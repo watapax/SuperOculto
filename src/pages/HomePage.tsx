@@ -12,7 +12,7 @@ const items = [
   },
   {
     to: '/jugadores',
-    label: 'Agregar jugador',
+    label: 'Jugadores',
     icon: '➕',
     desc: 'Sumá gente al roster del campeonato.',
     from: 'from-cyan-2',

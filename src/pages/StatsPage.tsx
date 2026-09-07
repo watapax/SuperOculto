@@ -1,8 +1,7 @@
 import AppHeader from '../components/AppHeader'
 import { Card } from '../components/ui'
 import { GAMES } from '../data/kofData'
-import { shortCharacterName } from '../lib/characterName'
-import { computeCharacterStats, computeHitStandings } from '../lib/stats'
+import { computeHitStandings } from '../lib/stats'
 import { useStore } from '../store/useStore'
 
 const MEDALS = ['🥇', '🥈', '🥉']
@@ -13,7 +12,6 @@ export default function StatsPage() {
 
   const finished = fights.filter((f) => f.status === 'finished')
   const standings = computeHitStandings(players, finished)
-  const characterStats = computeCharacterStats(finished).slice(0, 15)
   const recent = [...finished].sort((a, b) => (b.finishedAt ?? 0) - (a.finishedAt ?? 0)).slice(0, 15)
 
   function playerName(id: string) {
@@ -38,8 +36,7 @@ export default function StatsPage() {
                     <th className="py-2.5 pl-3 pr-2">#</th>
                     <th className="py-2.5 pr-2">Jugador</th>
                     <th className="py-2.5 pr-2 text-right">Peleas</th>
-                    <th className="py-2.5 pr-2 text-right">Golpes</th>
-                    <th className="py-2.5 pr-3 text-right">Prom.</th>
+                    <th className="py-2.5 pr-3 text-right">Ocultos</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -48,28 +45,7 @@ export default function StatsPage() {
                       <td className="py-2.5 pl-3 pr-2">{MEDALS[i] ?? <span className="text-white/40">{i + 1}</span>}</td>
                       <td className="py-2.5 pr-2 font-display text-base tracking-wide">{row.player.name}</td>
                       <td className="py-2.5 pr-2 text-right text-white/60">{row.fights}</td>
-                      <td className="py-2.5 pr-2 text-right font-display text-xl text-accent">{row.hitsReceived}</td>
-                      <td className="py-2.5 pr-3 text-right text-white/60">{row.avgHitsPerFight.toFixed(1)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Card>
-
-            <h2 className="mb-2 font-display text-2xl tracking-wide text-cyan">Personajes más usados</h2>
-            <Card className="mb-6 overflow-x-auto !p-0 border-cyan/30 shadow-[0_0_24px_-12px_var(--color-cyan)]">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-edge/50 text-left text-[11px] font-bold uppercase tracking-widest text-white/50">
-                    <th className="py-2.5 pl-3 pr-2">Personaje</th>
-                    <th className="py-2.5 pr-3 text-right">Usos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {characterStats.map((c) => (
-                    <tr key={c.character} className="border-b border-edge/20 last:border-0">
-                      <td className="py-2.5 pl-3 pr-2 font-semibold">{shortCharacterName(c.character)}</td>
-                      <td className="py-2.5 pr-3 text-right text-white/60">{c.timesUsed}</td>
+                      <td className="py-2.5 pr-3 text-right font-display text-2xl text-accent">{row.hitsReceived}</td>
                     </tr>
                   ))}
                 </tbody>

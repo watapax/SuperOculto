@@ -80,7 +80,7 @@ export default function LiveFightPage() {
           onUndo={() => undoHit(fight.id, 0)}
         />
 
-        <div className="relative z-20 h-1 bg-ink shadow-[0_0_12px_2px_rgba(0,0,0,0.6)]" />
+        <div className="relative z-20 h-3 bg-ink shadow-[0_0_16px_4px_rgba(0,0,0,0.7)]" />
 
         <PlayerZone
           position="bottom"

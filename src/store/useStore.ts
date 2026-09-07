@@ -12,8 +12,8 @@ interface State {
 interface Actions {
   hydrate: () => Promise<void>
 
-  addPlayer: (name: string) => Promise<void>
-  renamePlayer: (id: string, name: string) => Promise<void>
+  addPlayer: (name: string, avatar?: string | null) => Promise<void>
+  updatePlayer: (id: string, patch: { name?: string; avatar?: string | null }) => Promise<void>
   removePlayer: (id: string) => Promise<void>
 
   createFight: (params: {
@@ -49,13 +49,13 @@ export const useStore = create<State & Actions>()((set) => ({
     }
   },
 
-  addPlayer: async (name) => {
-    const player = await api.createPlayer(name)
+  addPlayer: async (name, avatar) => {
+    const player = await api.createPlayer(name, avatar)
     set((s) => ({ players: [...s.players, player] }))
   },
 
-  renamePlayer: async (id, name) => {
-    const player = await api.renamePlayer(id, name)
+  updatePlayer: async (id, patch) => {
+    const player = await api.updatePlayer(id, patch)
     set((s) => ({ players: s.players.map((p) => (p.id === id ? player : p)) }))
   },
 

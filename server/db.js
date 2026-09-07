@@ -25,6 +25,8 @@ export async function migrate() {
       created_at BIGINT NOT NULL
     );
 
+    ALTER TABLE players ADD COLUMN IF NOT EXISTS avatar TEXT;
+
     CREATE TABLE IF NOT EXISTS fights (
       id TEXT PRIMARY KEY,
       game_id TEXT NOT NULL,

@@ -15,9 +15,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   getPlayers: () => request<Player[]>('/players'),
-  createPlayer: (name: string) => request<Player>('/players', { method: 'POST', body: JSON.stringify({ name }) }),
-  renamePlayer: (id: string, name: string) =>
-    request<Player>(`/players/${id}`, { method: 'PATCH', body: JSON.stringify({ name }) }),
+  createPlayer: (name: string, avatar?: string | null) =>
+    request<Player>('/players', { method: 'POST', body: JSON.stringify({ name, avatar }) }),
+  updatePlayer: (id: string, patch: { name?: string; avatar?: string | null }) =>
+    request<Player>(`/players/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   removePlayer: (id: string) => request<void>(`/players/${id}`, { method: 'DELETE' }),
 
   getFights: () => request<Fight[]>('/fights'),

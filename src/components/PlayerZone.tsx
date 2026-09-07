@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import CharacterAvatar from './CharacterAvatar'
 import { useTapEffects } from '../hooks/useTapEffects'
 import { shortCharacterName } from '../lib/characterName'
+import { getCharacterFullImageUrl } from '../data/characterFullImages'
 
 interface Props {
   position: 'top' | 'bottom'
@@ -25,6 +26,12 @@ const ACCENTS = {
   },
 }
 
+function ColumnArt({ name }: { name: string }) {
+  const fullUrl = getCharacterFullImageUrl(name)
+  if (!fullUrl) return <CharacterAvatar name={name} selected character fill />
+  return <img src={fullUrl} alt={name} className="h-full w-full object-cover object-top" />
+}
+
 export default function PlayerZone({ position, playerName, characters, hits, onHit, onUndo }: Props) {
   const { bursts, shakeKey, trigger } = useTapEffects()
   const zoneRef = useRef<HTMLDivElement>(null)
@@ -42,10 +49,13 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
   }
 
   const labelBar = (
-    <div className={`flex items-center justify-between px-4 py-2.5 ${accent.bar}`}>
-      <span className={`truncate font-display text-xl tracking-wide ${accent.text}`}>{playerName}</span>
+    <div className={`flex items-center justify-between gap-2 px-4 py-2 ${accent.bar}`}>
+      <span className={`truncate font-display text-3xl tracking-wide ${accent.text}`}>{playerName}</span>
       <div className="flex items-center gap-2">
-        <span className="font-display text-4xl leading-none text-accent drop-shadow-[0_0_12px_rgba(255,214,10,0.6)]">
+        <span
+          className="font-display leading-none text-accent"
+          style={{ fontSize: '3.75rem', textShadow: '0 0 18px rgba(255,214,10,0.9), 0 0 40px rgba(255,214,10,0.5)' }}
+        >
           {hits}
         </span>
         <button
@@ -67,7 +77,7 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
     <div className="grid flex-1 grid-cols-3 gap-1 p-1">
       {characters.map((c) => (
         <div key={c} className="relative h-full overflow-hidden rounded-lg">
-          <CharacterAvatar name={c} selected character fill />
+          <ColumnArt name={c} />
           <span
             className={`pointer-events-none absolute inset-x-0 truncate text-center text-xs font-bold text-white ${
               isBottom

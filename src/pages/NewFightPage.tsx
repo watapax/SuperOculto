@@ -6,7 +6,7 @@ import { Select } from '../components/ui'
 import { GAME_LIST, GAMES } from '../data/kofData'
 import { shortGameYear } from '../lib/gameLabel'
 import { useStore } from '../store/useStore'
-import type { GameId } from '../types'
+import type { GameId, GameTeam } from '../types'
 
 const REQUIRED_CHARACTERS = 3
 
@@ -24,27 +24,43 @@ const GAME_ACCENTS = [
 
 function GameSelectStep({ onSelect }: { onSelect: (id: GameId) => void }) {
   return (
-    <div className="flex-1 px-4 py-5">
+    <div className="flex-1 overflow-y-auto px-4 py-5">
       <p className="mb-4 text-center text-sm text-white/60">Elegí el juego para esta pelea</p>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="flex flex-col gap-3">
         {GAME_LIST.map((g, i) => {
           const [from, to] = GAME_ACCENTS[i % GAME_ACCENTS.length]
+          const teamCount = g.teams?.length
           return (
             <button
               key={g.id}
               type="button"
               onClick={() => onSelect(g.id)}
-              className="relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 p-2 text-center shadow-lg shadow-black/40 transition-transform active:scale-95"
-              style={{ background: `linear-gradient(155deg, ${from}, ${to})` }}
+              className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-white/10 p-3 text-left shadow-lg shadow-black/40 transition-transform active:scale-[0.97]"
+              style={{ background: `linear-gradient(115deg, ${from}, ${to})` }}
             >
-              <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent" />
-              <span className="relative font-display text-[10px] tracking-[0.25em] text-white/80">KOF</span>
-              <span className="relative font-display text-3xl leading-none text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+              <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent" />
+              <span className="pointer-events-none absolute -right-3 -top-3 font-display text-7xl leading-none text-white/10">
                 {shortGameYear(g.year)}
               </span>
-              <span className="relative mt-1 text-[9px] font-medium text-white/70">
-                {g.characters.length} personajes
+              <span
+                className="relative shrink-0 font-display italic leading-none text-white"
+                style={{
+                  fontSize: '1.9rem',
+                  WebkitTextStroke: '1.5px rgba(10,7,20,0.9)',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                }}
+              >
+                KOF
               </span>
+              <span className="relative flex flex-1 flex-col">
+                <span className="font-display text-2xl leading-none text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+                  {shortGameYear(g.year)}
+                </span>
+                <span className="mt-1 text-[11px] font-medium text-white/80">
+                  {teamCount ? `${teamCount} equipos` : `${g.characters.length} personajes`}
+                </span>
+              </span>
+              <span className="relative shrink-0 text-2xl text-white/60">›</span>
             </button>
           )
         })}
@@ -63,6 +79,7 @@ function PlayerPanel({
   characters,
   onCharactersChange,
   gameCharacters,
+  gameTeams,
 }: {
   label: string
   side: 'p1' | 'p2'
@@ -73,6 +90,7 @@ function PlayerPanel({
   characters: string[]
   onCharactersChange: (next: string[]) => void
   gameCharacters: string[]
+  gameTeams?: GameTeam[]
 }) {
   const accent =
     side === 'p1'
@@ -93,7 +111,12 @@ function PlayerPanel({
           ))}
       </Select>
       {playerId ? (
-        <CharacterPicker options={gameCharacters} selected={characters} onChange={onCharactersChange} />
+        <CharacterPicker
+          options={gameCharacters}
+          teams={gameTeams}
+          selected={characters}
+          onChange={onCharactersChange}
+        />
       ) : (
         <p className="rounded-xl border border-dashed border-edge/50 p-4 text-center text-xs text-white/40">
           Elegí un jugador para armar su equipo
@@ -116,6 +139,7 @@ export default function NewFightPage() {
   const [char2, setChar2] = useState<string[]>([])
 
   const gameCharacters = gameId ? GAMES[gameId].characters : []
+  const gameTeams = gameId ? GAMES[gameId].teams : undefined
 
   const canStart =
     gameId &&
@@ -188,6 +212,7 @@ export default function NewFightPage() {
             characters={char1}
             onCharactersChange={setChar1}
             gameCharacters={gameCharacters}
+            gameTeams={gameTeams}
           />
 
           <div className="relative z-10 -my-9 flex justify-center">
@@ -214,6 +239,7 @@ export default function NewFightPage() {
             characters={char2}
             onCharactersChange={setChar2}
             gameCharacters={gameCharacters}
+            gameTeams={gameTeams}
           />
         </div>
       </div>

@@ -9,17 +9,25 @@ export type GameId =
   | 'kof2001'
   | 'kof2002'
 
+export interface GameTeam {
+  name: string
+  characters: string[]
+}
+
 export interface GameInfo {
   id: GameId
   name: string
   year: number
   characters: string[]
+  /** Solo en juegos donde se elige un equipo fijo de 3 en vez de personajes sueltos (ej. KOF '94). */
+  teams?: GameTeam[]
 }
 
 export interface Player {
   id: string
   name: string
   createdAt: number
+  avatar?: string | null
 }
 
 export interface FightSide {
