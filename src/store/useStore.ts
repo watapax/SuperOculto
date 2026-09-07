@@ -28,6 +28,7 @@ interface Actions {
   undoHit: (fightId: string, side: 0 | 1) => void
   finishFight: (fightId: string) => Promise<void>
   discardFight: (fightId: string) => Promise<void>
+  clearStats: () => Promise<void>
 }
 
 function patchFight(fights: Fight[], fightId: string, updater: (f: Fight) => Fight): Fight[] {
@@ -107,5 +108,10 @@ export const useStore = create<State & Actions>()((set) => ({
   discardFight: async (fightId) => {
     await api.discardFight(fightId)
     set((s) => ({ fights: s.fights.filter((f) => f.id !== fightId) }))
+  },
+
+  clearStats: async () => {
+    await api.clearStats()
+    set((s) => ({ fights: s.fights.filter((f) => f.status !== 'finished') }))
   },
 }))

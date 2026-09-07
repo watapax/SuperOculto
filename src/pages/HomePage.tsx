@@ -5,7 +5,6 @@ const items = [
     to: '/pelea/nueva',
     label: 'Crear pelea',
     icon: '⚔️',
-    desc: 'Elegí a los dos jugadores y arrancá el contador de golpes.',
     from: 'from-brand',
     to2: 'to-brand-2',
     ring: 'hover:border-brand/60',
@@ -14,16 +13,14 @@ const items = [
     to: '/jugadores',
     label: 'Jugadores',
     icon: '➕',
-    desc: 'Sumá gente al roster del campeonato.',
     from: 'from-cyan-2',
     to2: 'to-cyan',
     ring: 'hover:border-cyan/60',
   },
   {
     to: '/estadisticas',
-    label: 'Estadísticas',
+    label: 'Ranking',
     icon: '📊',
-    desc: 'Quién se llevó más golpes especiales.',
     from: 'from-violet',
     to2: 'to-accent',
     ring: 'hover:border-violet/60',
@@ -39,9 +36,7 @@ export default function HomePage() {
           alt="Super Ocultos"
           className="mx-auto w-full max-w-sm drop-shadow-[0_4px_24px_rgba(255,59,92,0.35)]"
         />
-        <p className="mt-4 text-center text-sm text-white/50">
-          Campeonato de golpes especiales de The King of Fighters.
-        </p>
+        <p className="mt-4 text-center text-sm text-white/50">Campeonato de ocultos de KOF</p>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -56,10 +51,7 @@ export default function HomePage() {
             >
               {item.icon}
             </span>
-            <span className="flex-1">
-              <span className="block font-display text-2xl tracking-wide text-white">{item.label}</span>
-              <span className="block text-xs text-white/50">{item.desc}</span>
-            </span>
+            <span className="flex-1 font-display text-2xl tracking-wide text-white">{item.label}</span>
             <span className="text-2xl text-white/25">›</span>
           </Link>
         ))}

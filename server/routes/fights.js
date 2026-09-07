@@ -90,3 +90,8 @@ fightsRouter.delete('/:id', async (req, res) => {
   await pool.query('DELETE FROM fights WHERE id = $1', [req.params.id])
   res.status(204).end()
 })
+
+fightsRouter.delete('/', async (_req, res) => {
+  await pool.query("DELETE FROM fights WHERE status = 'finished'")
+  res.status(204).end()
+})

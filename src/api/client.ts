@@ -35,4 +35,5 @@ export const api = {
     request<Fight>(`/fights/${fightId}/undo`, { method: 'POST', body: JSON.stringify({ side }) }),
   finishFight: (fightId: string) => request<Fight>(`/fights/${fightId}/finish`, { method: 'POST' }),
   discardFight: (fightId: string) => request<void>(`/fights/${fightId}`, { method: 'DELETE' }),
+  clearStats: () => request<void>('/fights', { method: 'DELETE' }),
 }
