@@ -33,19 +33,27 @@ export default function LiveFightPage() {
   const p1 = players.find((p) => p.id === fight.sides[0].playerId)
   const p2 = players.find((p) => p.id === fight.sides[1].playerId)
 
-  function handleBack() {
+  async function handleBack() {
     if (confirm('¿Cancelar esta pelea? No se va a guardar el resultado.')) {
-      discardFight(fight!.id)
+      try {
+        await discardFight(fight!.id)
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'No se pudo cancelar la pelea')
+      }
       navigate('/')
     }
   }
 
-  function handleFinish() {
+  async function handleFinish() {
     const [s1, s2] = fight!.sides
     const summary = `${p1?.name ?? '?'}: ${s1.hits} golpes\n${p2?.name ?? '?'}: ${s2.hits} golpes\n\n¿Finalizar y guardar la pelea?`
     if (confirm(summary)) {
-      finishFight(fight!.id)
-      navigate('/estadisticas')
+      try {
+        await finishFight(fight!.id)
+        navigate('/estadisticas')
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'No se pudo finalizar la pelea')
+      }
     }
   }
 

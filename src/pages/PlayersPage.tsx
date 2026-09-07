@@ -14,10 +14,15 @@ export default function PlayersPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
 
-  function handleAdd() {
+  async function handleAdd() {
     if (!name.trim()) return
-    addPlayer(name)
+    const value = name
     setName('')
+    try {
+      await addPlayer(value)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo agregar el jugador')
+    }
   }
 
   return (
@@ -57,13 +62,19 @@ export default function PlayersPage() {
                   className="flex-1"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && editingName.trim()) {
-                      renamePlayer(player.id, editingName)
+                      renamePlayer(player.id, editingName).catch((err) =>
+                        alert(err instanceof Error ? err.message : 'No se pudo renombrar'),
+                      )
                       setEditingId(null)
                     }
                     if (e.key === 'Escape') setEditingId(null)
                   }}
                   onBlur={() => {
-                    if (editingName.trim()) renamePlayer(player.id, editingName)
+                    if (editingName.trim()) {
+                      renamePlayer(player.id, editingName).catch((err) =>
+                        alert(err instanceof Error ? err.message : 'No se pudo renombrar'),
+                      )
+                    }
                     setEditingId(null)
                   }}
                 />
@@ -85,7 +96,9 @@ export default function PlayersPage() {
                 className="text-xs text-red-400 hover:text-red-300"
                 onClick={() => {
                   if (confirm(`¿Eliminar a ${player.name}? Esto también borra sus peleas.`)) {
-                    removePlayer(player.id)
+                    removePlayer(player.id).catch((err) =>
+                      alert(err instanceof Error ? err.message : 'No se pudo eliminar'),
+                    )
                   }
                 }}
               >

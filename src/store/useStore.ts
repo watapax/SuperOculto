@@ -1,20 +1,20 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { api } from '../api/client'
 import type { Fight, GameId, Player } from '../types'
-
-function makeId() {
-  return crypto.randomUUID()
-}
 
 interface State {
   players: Player[]
   fights: Fight[]
+  hydrated: boolean
+  hydrationError: string | null
 }
 
 interface Actions {
-  addPlayer: (name: string) => void
-  renamePlayer: (id: string, name: string) => void
-  removePlayer: (id: string) => void
+  hydrate: () => Promise<void>
+
+  addPlayer: (name: string) => Promise<void>
+  renamePlayer: (id: string, name: string) => Promise<void>
+  removePlayer: (id: string) => Promise<void>
 
   createFight: (params: {
     gameId: GameId
@@ -22,85 +22,90 @@ interface Actions {
     player1Characters: string[]
     player2Id: string
     player2Characters: string[]
-  }) => string
+  }) => Promise<string>
 
   addHit: (fightId: string, side: 0 | 1) => void
   undoHit: (fightId: string, side: 0 | 1) => void
-  finishFight: (fightId: string) => void
-  discardFight: (fightId: string) => void
+  finishFight: (fightId: string) => Promise<void>
+  discardFight: (fightId: string) => Promise<void>
 }
 
-export const useStore = create<State & Actions>()(
-  persist(
-    (set) => ({
-      players: [],
-      fights: [],
+function patchFight(fights: Fight[], fightId: string, updater: (f: Fight) => Fight): Fight[] {
+  return fights.map((f) => (f.id === fightId ? updater(f) : f))
+}
 
-      addPlayer: (name) =>
-        set((s) => ({
-          players: [...s.players, { id: makeId(), name: name.trim(), createdAt: Date.now() }],
-        })),
+export const useStore = create<State & Actions>()((set) => ({
+  players: [],
+  fights: [],
+  hydrated: false,
+  hydrationError: null,
 
-      renamePlayer: (id, name) =>
-        set((s) => ({
-          players: s.players.map((p) => (p.id === id ? { ...p, name: name.trim() } : p)),
-        })),
+  hydrate: async () => {
+    try {
+      const [players, fights] = await Promise.all([api.getPlayers(), api.getFights()])
+      set({ players, fights, hydrated: true, hydrationError: null })
+    } catch (err) {
+      set({ hydrated: true, hydrationError: err instanceof Error ? err.message : 'Error al cargar datos' })
+    }
+  },
 
-      removePlayer: (id) =>
-        set((s) => ({
-          players: s.players.filter((p) => p.id !== id),
-          fights: s.fights.filter((f) => f.sides[0].playerId !== id && f.sides[1].playerId !== id),
-        })),
+  addPlayer: async (name) => {
+    const player = await api.createPlayer(name)
+    set((s) => ({ players: [...s.players, player] }))
+  },
 
-      createFight: ({ gameId, player1Id, player1Characters, player2Id, player2Characters }) => {
-        const id = makeId()
-        const fight: Fight = {
-          id,
-          gameId,
-          createdAt: Date.now(),
-          finishedAt: null,
-          status: 'live',
-          sides: [
-            { playerId: player1Id, characters: player1Characters, hits: 0 },
-            { playerId: player2Id, characters: player2Characters, hits: 0 },
-          ],
-        }
-        set((s) => ({ fights: [...s.fights, fight] }))
-        return id
-      },
+  renamePlayer: async (id, name) => {
+    const player = await api.renamePlayer(id, name)
+    set((s) => ({ players: s.players.map((p) => (p.id === id ? player : p)) }))
+  },
 
-      addHit: (fightId, side) =>
-        set((s) => ({
-          fights: s.fights.map((f) => {
-            if (f.id !== fightId) return f
-            const sides = [...f.sides] as [Fight['sides'][0], Fight['sides'][1]]
-            sides[side] = { ...sides[side], hits: sides[side].hits + 1 }
-            return { ...f, sides }
-          }),
-        })),
+  removePlayer: async (id) => {
+    await api.removePlayer(id)
+    set((s) => ({
+      players: s.players.filter((p) => p.id !== id),
+      fights: s.fights.filter((f) => f.sides[0].playerId !== id && f.sides[1].playerId !== id),
+    }))
+  },
 
-      undoHit: (fightId, side) =>
-        set((s) => ({
-          fights: s.fights.map((f) => {
-            if (f.id !== fightId) return f
-            const sides = [...f.sides] as [Fight['sides'][0], Fight['sides'][1]]
-            sides[side] = { ...sides[side], hits: Math.max(0, sides[side].hits - 1) }
-            return { ...f, sides }
-          }),
-        })),
+  createFight: async ({ gameId, player1Id, player1Characters, player2Id, player2Characters }) => {
+    const fight = await api.createFight({ gameId, player1Id, player1Characters, player2Id, player2Characters })
+    set((s) => ({ fights: [...s.fights, fight] }))
+    return fight.id
+  },
 
-      finishFight: (fightId) =>
-        set((s) => ({
-          fights: s.fights.map((f) =>
-            f.id === fightId ? { ...f, status: 'finished', finishedAt: Date.now() } : f,
-          ),
-        })),
+  addHit: (fightId, side) => {
+    set((s) => ({
+      fights: patchFight(s.fights, fightId, (f) => {
+        const sides = [...f.sides] as [Fight['sides'][0], Fight['sides'][1]]
+        sides[side] = { ...sides[side], hits: sides[side].hits + 1 }
+        return { ...f, sides }
+      }),
+    }))
+    api.addHit(fightId, side).catch((err) => {
+      console.error('No se pudo guardar el golpe:', err)
+    })
+  },
 
-      discardFight: (fightId) =>
-        set((s) => ({
-          fights: s.fights.filter((f) => f.id !== fightId),
-        })),
-    }),
-    { name: 'super-ocultos-storage' },
-  ),
-)
+  undoHit: (fightId, side) => {
+    set((s) => ({
+      fights: patchFight(s.fights, fightId, (f) => {
+        const sides = [...f.sides] as [Fight['sides'][0], Fight['sides'][1]]
+        sides[side] = { ...sides[side], hits: Math.max(0, sides[side].hits - 1) }
+        return { ...f, sides }
+      }),
+    }))
+    api.undoHit(fightId, side).catch((err) => {
+      console.error('No se pudo deshacer el golpe:', err)
+    })
+  },
+
+  finishFight: async (fightId) => {
+    const fight = await api.finishFight(fightId)
+    set((s) => ({ fights: patchFight(s.fights, fightId, () => fight) }))
+  },
+
+  discardFight: async (fightId) => {
+    await api.discardFight(fightId)
+    set((s) => ({ fights: s.fights.filter((f) => f.id !== fightId) }))
+  },
+}))

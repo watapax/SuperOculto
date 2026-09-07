@@ -71,16 +71,20 @@ export default function NewFightPage() {
     setChar2([])
   }
 
-  function handleStart() {
+  async function handleStart() {
     if (!canStart) return
-    const id = createFight({
-      gameId,
-      player1Id,
-      player1Characters: char1,
-      player2Id,
-      player2Characters: char2,
-    })
-    navigate(`/pelea/${id}`, { replace: true })
+    try {
+      const id = await createFight({
+        gameId,
+        player1Id,
+        player1Characters: char1,
+        player2Id,
+        player2Characters: char2,
+      })
+      navigate(`/pelea/${id}`, { replace: true })
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo crear la pelea')
+    }
   }
 
   if (players.length < 2) {
