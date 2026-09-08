@@ -98,3 +98,11 @@ export const listExit = {
   opacity: 0,
   transition: { duration: 0.15 },
 }
+
+/** Transición entre pasos del wizard de "crear pelea": desliza y desvanece. */
+export const wizardStep = {
+  initial: { opacity: 0, x: 28 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -28 },
+  transition: { duration: 0.26, ease: easeOutSine },
+}
