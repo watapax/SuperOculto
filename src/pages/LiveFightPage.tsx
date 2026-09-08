@@ -6,7 +6,7 @@ import PageTransition from '../components/PageTransition'
 import PlayerZone from '../components/PlayerZone'
 import { GAMES } from '../data/kofData'
 import { shortGameYear } from '../lib/gameLabel'
-import { staggerContainer } from '../lib/motionVariants'
+import { dividerReveal, fightHeaderReveal, fightSceneContainer, vsPunchIn } from '../lib/motionVariants'
 import { useStore } from '../store/useStore'
 
 interface Projectile {
@@ -215,23 +215,25 @@ export default function LiveFightPage() {
 
   return (
     <PageTransition className="mx-auto flex h-dvh max-w-md flex-col">
-      <AppHeader
-        title={`KOF ${shortGameYear(game.year)}`}
-        onBack={handleBack}
-        right={
-          <button
-            type="button"
-            onClick={handleFinish}
-            className="shrink-0 rounded-xl bg-gradient-to-br from-brand to-brand-2 px-4 py-2 font-display text-sm tracking-wide text-ink shadow-[0_2px_12px_-2px_var(--color-brand)] active:scale-95"
-          >
-            Finalizar
-          </button>
-        }
-      />
+      <motion.div initial="hidden" animate="show" variants={fightHeaderReveal}>
+        <AppHeader
+          title={`KOF ${shortGameYear(game.year)}`}
+          onBack={handleBack}
+          right={
+            <button
+              type="button"
+              onClick={handleFinish}
+              className="shrink-0 rounded-xl bg-gradient-to-br from-brand to-brand-2 px-4 py-2 font-display text-sm tracking-wide text-ink shadow-[0_2px_12px_-2px_var(--color-brand)] active:scale-95"
+            >
+              Finalizar
+            </button>
+          }
+        />
+      </motion.div>
 
       <motion.div
         ref={containerRef}
-        variants={staggerContainer}
+        variants={fightSceneContainer}
         initial="hidden"
         animate="show"
         className="relative flex flex-1 flex-col overflow-hidden"
@@ -249,7 +251,11 @@ export default function LiveFightPage() {
           }}
         />
 
-        <div className="relative z-20 h-3 bg-ink shadow-[0_0_16px_4px_rgba(0,0,0,0.7)]" />
+        <motion.div
+          variants={dividerReveal}
+          style={{ transformOrigin: '50% 50%' }}
+          className="relative z-20 h-3 bg-ink shadow-[0_0_16px_4px_rgba(0,0,0,0.7)]"
+        />
 
         <PlayerZone
           position="bottom"
@@ -268,7 +274,10 @@ export default function LiveFightPage() {
           <FlyingHit key={p.id} p={p} />
         ))}
 
-        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
+        <motion.div
+          variants={vsPunchIn}
+          className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
+        >
           <span
             className="font-display text-[7rem] leading-none text-accent"
             style={{
@@ -278,7 +287,7 @@ export default function LiveFightPage() {
           >
             VS
           </span>
-        </div>
+        </motion.div>
       </motion.div>
     </PageTransition>
   )

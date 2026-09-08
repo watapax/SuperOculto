@@ -4,7 +4,7 @@ import CharacterAvatar from './CharacterAvatar'
 import { useTapEffects } from '../hooks/useTapEffects'
 import { shortCharacterName } from '../lib/characterName'
 import { getCharacterFullImageUrl } from '../data/characterFullImages'
-import { staggerItem } from '../lib/motionVariants'
+import { staggerItem, zoneContentStagger, zoneSlideInBottom, zoneSlideInTop } from '../lib/motionVariants'
 
 interface Props {
   position: 'top' | 'bottom'
@@ -56,6 +56,7 @@ export default function PlayerZone({
   const prevHits = useRef(hits)
   const accent = ACCENTS[position]
   const isBottom = position === 'bottom'
+  const zoneVariants = isBottom ? zoneSlideInBottom : zoneSlideInTop
 
   useEffect(() => {
     if (hits > prevHits.current) setPulseKey((k) => k + 1)
@@ -130,17 +131,22 @@ export default function PlayerZone({
   )
 
   return (
-    <div
+    <motion.div
       ref={(el) => {
         zoneElRef.current = el
         zoneRef?.(el)
       }}
+      variants={zoneVariants}
       className={`relative flex flex-1 select-none flex-col overflow-hidden ${accent.zone}`}
     >
-      <div ref={shakeWrapRef} className={`flex flex-1 ${isBottom ? 'flex-col-reverse' : 'flex-col'}`}>
+      <motion.div
+        ref={shakeWrapRef}
+        variants={zoneContentStagger}
+        className={`flex flex-1 ${isBottom ? 'flex-col-reverse' : 'flex-col'}`}
+      >
         {labelBar}
         {grid}
-      </div>
+      </motion.div>
 
       {flashKey > 0 && (
         <div key={`flash-${flashKey}`} className="hit-flash pointer-events-none absolute inset-0 bg-white" />
@@ -172,6 +178,6 @@ export default function PlayerZone({
           })}
         </div>
       ))}
-    </div>
+    </motion.div>
   )
 }
