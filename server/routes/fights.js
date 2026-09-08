@@ -15,6 +15,7 @@ function serializeFight(row) {
       { playerId: row.side1_player_id, characters: row.side1_characters, hits: row.side1_hits },
       { playerId: row.side2_player_id, characters: row.side2_characters, hits: row.side2_hits },
     ],
+    hitsLog: row.hits_log ?? [],
   }
 }
 
@@ -52,13 +53,20 @@ fightsRouter.post('/', async (req, res) => {
 })
 
 fightsRouter.post('/:id/hit', async (req, res) => {
-  const side = parseSide(req.body?.side)
-  if (side === null) return res.status(400).json({ error: 'side debe ser 0 o 1' })
+  const attackerSide = parseSide(req.body?.attackerSide)
+  const character = String(req.body?.character ?? '').trim()
+  if (attackerSide === null || !character) {
+    return res.status(400).json({ error: 'attackerSide (0 o 1) y character son requeridos' })
+  }
 
-  const column = side === 0 ? 'side1_hits' : 'side2_hits'
+  const defenderSide = attackerSide === 0 ? 1 : 0
+  const hitsColumn = defenderSide === 0 ? 'side1_hits' : 'side2_hits'
   const { rows } = await pool.query(
-    `UPDATE fights SET ${column} = ${column} + 1 WHERE id = $1 RETURNING *`,
-    [req.params.id],
+    `UPDATE fights SET
+       ${hitsColumn} = ${hitsColumn} + 1,
+       hits_log = hits_log || jsonb_build_array(jsonb_build_object('attackerSide', $2::int, 'character', $3::text))
+     WHERE id = $1 RETURNING *`,
+    [req.params.id, attackerSide, character],
   )
   if (rows.length === 0) return res.status(404).json({ error: 'pelea no encontrada' })
   res.json(serializeFight(rows[0]))
@@ -68,12 +76,28 @@ fightsRouter.post('/:id/undo', async (req, res) => {
   const side = parseSide(req.body?.side)
   if (side === null) return res.status(400).json({ error: 'side debe ser 0 o 1' })
 
-  const column = side === 0 ? 'side1_hits' : 'side2_hits'
+  const { rows: existing } = await pool.query('SELECT * FROM fights WHERE id = $1', [req.params.id])
+  if (existing.length === 0) return res.status(404).json({ error: 'pelea no encontrada' })
+
+  const log = existing[0].hits_log ?? []
+  let removeAt = -1
+  for (let i = log.length - 1; i >= 0; i--) {
+    const defenderSide = log[i].attackerSide === 0 ? 1 : 0
+    if (defenderSide === side) {
+      removeAt = i
+      break
+    }
+  }
+  if (removeAt === -1) {
+    return res.json(serializeFight(existing[0]))
+  }
+
+  const newLog = [...log.slice(0, removeAt), ...log.slice(removeAt + 1)]
+  const hitsColumn = side === 0 ? 'side1_hits' : 'side2_hits'
   const { rows } = await pool.query(
-    `UPDATE fights SET ${column} = GREATEST(${column} - 1, 0) WHERE id = $1 RETURNING *`,
-    [req.params.id],
+    `UPDATE fights SET ${hitsColumn} = GREATEST(${hitsColumn} - 1, 0), hits_log = $2 WHERE id = $1 RETURNING *`,
+    [req.params.id, JSON.stringify(newLog)],
   )
-  if (rows.length === 0) return res.status(404).json({ error: 'pelea no encontrada' })
   res.json(serializeFight(rows[0]))
 })
 

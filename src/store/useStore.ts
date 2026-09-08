@@ -24,7 +24,7 @@ interface Actions {
     player2Characters: string[]
   }) => Promise<string>
 
-  addHit: (fightId: string, side: 0 | 1) => void
+  addHit: (fightId: string, attackerSide: 0 | 1, character: string) => void
   undoHit: (fightId: string, side: 0 | 1) => void
   finishFight: (fightId: string) => Promise<void>
   discardFight: (fightId: string) => Promise<void>
@@ -74,15 +74,16 @@ export const useStore = create<State & Actions>()((set) => ({
     return fight.id
   },
 
-  addHit: (fightId, side) => {
+  addHit: (fightId, attackerSide, character) => {
+    const defenderSide = attackerSide === 0 ? 1 : 0
     set((s) => ({
       fights: patchFight(s.fights, fightId, (f) => {
         const sides = [...f.sides] as [Fight['sides'][0], Fight['sides'][1]]
-        sides[side] = { ...sides[side], hits: sides[side].hits + 1 }
-        return { ...f, sides }
+        sides[defenderSide] = { ...sides[defenderSide], hits: sides[defenderSide].hits + 1 }
+        return { ...f, sides, hitsLog: [...f.hitsLog, { attackerSide, character }] }
       }),
     }))
-    api.addHit(fightId, side).catch((err) => {
+    api.addHit(fightId, attackerSide, character).catch((err) => {
       console.error('No se pudo guardar el golpe:', err)
     })
   },
@@ -90,9 +91,19 @@ export const useStore = create<State & Actions>()((set) => ({
   undoHit: (fightId, side) => {
     set((s) => ({
       fights: patchFight(s.fights, fightId, (f) => {
+        let removeAt = -1
+        for (let i = f.hitsLog.length - 1; i >= 0; i--) {
+          const defenderSide = f.hitsLog[i].attackerSide === 0 ? 1 : 0
+          if (defenderSide === side) {
+            removeAt = i
+            break
+          }
+        }
+        if (removeAt === -1) return f
+        const hitsLog = [...f.hitsLog.slice(0, removeAt), ...f.hitsLog.slice(removeAt + 1)]
         const sides = [...f.sides] as [Fight['sides'][0], Fight['sides'][1]]
         sides[side] = { ...sides[side], hits: Math.max(0, sides[side].hits - 1) }
-        return { ...f, sides }
+        return { ...f, sides, hitsLog }
       }),
     }))
     api.undoHit(fightId, side).catch((err) => {

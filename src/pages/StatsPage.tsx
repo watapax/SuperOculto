@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import AppHeader from '../components/AppHeader'
+import PageTransition from '../components/PageTransition'
 import { Card } from '../components/ui'
 import { GAMES } from '../data/kofData'
 import { computeHitStandings } from '../lib/stats'
@@ -35,7 +36,7 @@ export default function StatsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <PageTransition className="flex flex-1 flex-col">
       <AppHeader title="Ranking" onBack="home" />
       <div className="flex-1 px-4 py-5">
         {finished.length === 0 ? (
@@ -109,6 +110,6 @@ export default function StatsPage() {
           </>
         )}
       </div>
-    </div>
+    </PageTransition>
   )
 }

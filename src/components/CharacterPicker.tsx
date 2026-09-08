@@ -89,7 +89,7 @@ export default function CharacterPicker({
       {atMax && (
         <p className="mb-2 text-[11px] font-medium text-lime">Equipo completo — sacá uno para elegir otro.</p>
       )}
-      <div className="grid max-h-72 grid-cols-4 gap-0.5 overflow-y-auto rounded-xl border border-edge/50 bg-ink/40 p-1">
+      <div className="grid max-h-72 grid-cols-4 gap-px overflow-y-auto rounded-xl border border-edge/50 bg-ink/40 p-0.5">
         {options.map((c) => {
           const active = selected.includes(c)
           const disabled = !active && atMax
@@ -99,7 +99,7 @@ export default function CharacterPicker({
               key={c}
               onClick={() => toggle(c)}
               disabled={disabled}
-              className={`flex flex-col items-center gap-0.5 rounded-lg p-0.5 text-center transition-all ${
+              className={`flex flex-col items-center gap-0.5 rounded-lg p-px text-center transition-all ${
                 active
                   ? 'bg-brand/20'
                   : disabled
@@ -107,7 +107,7 @@ export default function CharacterPicker({
                     : 'hover:bg-panel-2 active:scale-95'
               }`}
             >
-              <CharacterAvatar name={c} size="md" selected={active} character />
+              <CharacterAvatar name={c} size="lg" selected={active} character />
               <span className="line-clamp-1 text-[11px] font-medium leading-tight text-white/80">
                 {shortCharacterName(c)}
               </span>

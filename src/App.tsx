@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import PlayersPage from './pages/PlayersPage'
@@ -41,15 +42,22 @@ export default function App() {
     )
   }
 
+  return <AnimatedRoutes />
+}
+
+function AnimatedRoutes() {
+  const location = useLocation()
   return (
-    <Routes>
-      <Route path="pelea/:id" element={<LiveFightPage />} />
-      <Route element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="jugadores" element={<PlayersPage />} />
-        <Route path="pelea/nueva" element={<NewFightPage />} />
-        <Route path="estadisticas" element={<StatsPage />} />
-      </Route>
-    </Routes>
+    <AnimatePresence initial={false}>
+      <Routes location={location} key={location.pathname}>
+        <Route path="pelea/:id" element={<LiveFightPage />} />
+        <Route element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="jugadores" element={<PlayersPage />} />
+          <Route path="pelea/nueva" element={<NewFightPage />} />
+          <Route path="estadisticas" element={<StatsPage />} />
+        </Route>
+      </Routes>
+    </AnimatePresence>
   )
 }

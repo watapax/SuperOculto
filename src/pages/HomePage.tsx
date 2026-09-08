@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import PageTransition from '../components/PageTransition'
 
 const items = [
   {
@@ -29,7 +30,7 @@ const items = [
 
 export default function HomePage() {
   return (
-    <div className="flex flex-1 flex-col px-5 pb-8 pt-12">
+    <PageTransition className="flex flex-1 flex-col px-5 pb-8 pt-12">
       <div className="mb-10">
         <img
           src="/brand/logo.png"
@@ -56,6 +57,6 @@ export default function HomePage() {
           </Link>
         ))}
       </div>
-    </div>
+    </PageTransition>
   )
 }

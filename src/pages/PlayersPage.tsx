@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AppHeader from '../components/AppHeader'
 import AvatarPicker from '../components/AvatarPicker'
+import PageTransition from '../components/PageTransition'
 import PlayerAvatar from '../components/PlayerAvatar'
 import { Button, Card, Input, Label } from '../components/ui'
 import { randomPlayerAvatar } from '../data/playerAvatars'
@@ -32,7 +33,7 @@ export default function PlayersPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <PageTransition className="flex flex-1 flex-col">
       <AppHeader title="Jugadores" onBack="home" />
       <div className="flex-1 px-4 py-5">
         <Card className="mb-5 border-cyan/30 shadow-[0_0_24px_-10px_var(--color-cyan)]">
@@ -140,6 +141,6 @@ export default function PlayersPage() {
           ))}
         </div>
       </div>
-    </div>
+    </PageTransition>
   )
 }

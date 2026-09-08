@@ -40,5 +40,7 @@ export async function migrate() {
       side2_characters JSONB NOT NULL DEFAULT '[]',
       side2_hits INTEGER NOT NULL DEFAULT 0
     );
+
+    ALTER TABLE fights ADD COLUMN IF NOT EXISTS hits_log JSONB NOT NULL DEFAULT '[]';
   `)
 }

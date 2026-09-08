@@ -1,16 +1,22 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import CharacterAvatar from './CharacterAvatar'
 import { useTapEffects } from '../hooks/useTapEffects'
 import { shortCharacterName } from '../lib/characterName'
 import { getCharacterFullImageUrl } from '../data/characterFullImages'
+import { staggerItem } from '../lib/motionVariants'
 
 interface Props {
   position: 'top' | 'bottom'
   playerName: string
   characters: string[]
   hits: number
-  onHit: () => void
+  /** El jugador de ESTA zona ejecutó el movimiento con `character`; el elemento tocado se usa como origen del proyectil. */
+  onCharacterTap: (character: string, el: HTMLElement) => void
   onUndo: () => void
+  /** Se incrementa cuando ESTE jugador recibe un golpe (llega el proyectil) — dispara explosión + shake. */
+  hitTrigger: number
+  zoneRef?: (el: HTMLDivElement | null) => void
 }
 
 const ACCENTS = {
@@ -32,29 +38,55 @@ function ColumnArt({ name }: { name: string }) {
   return <img src={fullUrl} alt={name} className="h-full w-full object-cover object-top" />
 }
 
-export default function PlayerZone({ position, playerName, characters, hits, onHit, onUndo }: Props) {
+export default function PlayerZone({
+  position,
+  playerName,
+  characters,
+  hits,
+  onCharacterTap,
+  onUndo,
+  hitTrigger,
+  zoneRef,
+}: Props) {
   const { bursts, shakeKey, trigger } = useTapEffects()
-  const zoneRef = useRef<HTMLDivElement>(null)
+  const zoneElRef = useRef<HTMLDivElement | null>(null)
+  const shakeWrapRef = useRef<HTMLDivElement>(null)
   const [flashKey, setFlashKey] = useState(0)
+  const [pulseKey, setPulseKey] = useState(0)
+  const prevHits = useRef(hits)
   const accent = ACCENTS[position]
   const isBottom = position === 'bottom'
 
-  function handleTap(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = zoneRef.current?.getBoundingClientRect()
-    const x = rect ? e.clientX - rect.left : 0
-    const y = rect ? e.clientY - rect.top : 0
-    trigger(x, y)
+  useEffect(() => {
+    if (hits > prevHits.current) setPulseKey((k) => k + 1)
+    prevHits.current = hits
+  }, [hits])
+
+  useEffect(() => {
+    if (hitTrigger === 0) return
+    const rect = zoneElRef.current?.getBoundingClientRect()
+    trigger(rect ? rect.width / 2 : 0, rect ? rect.height / 2 : 0)
     setFlashKey((k) => k + 1)
-    onHit()
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hitTrigger])
+
+  useEffect(() => {
+    if (shakeKey === 0) return
+    const el = shakeWrapRef.current
+    if (!el) return
+    el.classList.remove('animate-shake')
+    void el.offsetWidth
+    el.classList.add('animate-shake')
+  }, [shakeKey])
 
   const labelBar = (
-    <div className={`flex items-center justify-between gap-2 px-4 py-2 ${accent.bar}`}>
+    <motion.div variants={staggerItem} className={`flex items-center justify-between gap-2 px-4 py-2 ${accent.bar}`}>
       <span className={`truncate font-display text-3xl tracking-wide ${accent.text}`}>{playerName}</span>
       <div className="flex items-center gap-2">
         <span
-          className="font-display leading-none text-accent"
-          style={{ fontSize: '3.75rem', textShadow: '0 0 18px rgba(255,214,10,0.9), 0 0 40px rgba(255,214,10,0.5)' }}
+          key={`hits-${pulseKey}`}
+          className={`font-display leading-none text-accent ${pulseKey > 0 ? 'animate-pulse-scale' : ''}`}
+          style={{ fontSize: '5rem', textShadow: '0 0 20px rgba(255,214,10,0.95), 0 0 46px rgba(255,214,10,0.55)' }}
         >
           {hits}
         </span>
@@ -70,13 +102,18 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
           ↺
         </button>
       </div>
-    </div>
+    </motion.div>
   )
 
   const grid = (
     <div className="grid flex-1 grid-cols-3 gap-1 p-1">
       {characters.map((c) => (
-        <div key={c} className="relative h-full overflow-hidden rounded-lg">
+        <motion.div
+          key={c}
+          variants={staggerItem}
+          onClick={(e) => onCharacterTap(c, e.currentTarget)}
+          className="relative h-full cursor-pointer touch-manipulation overflow-hidden rounded-lg transition-transform active:scale-[0.96] active:brightness-110"
+        >
           <ColumnArt name={c} />
           <span
             className={`pointer-events-none absolute inset-x-0 truncate text-center text-xs font-bold text-white ${
@@ -87,21 +124,20 @@ export default function PlayerZone({ position, playerName, characters, hits, onH
           >
             {shortCharacterName(c)}
           </span>
-        </div>
+        </motion.div>
       ))}
     </div>
   )
 
   return (
     <div
-      ref={zoneRef}
-      onClick={handleTap}
-      className={`relative flex flex-1 cursor-pointer select-none touch-manipulation flex-col overflow-hidden ${accent.zone} active:brightness-110`}
+      ref={(el) => {
+        zoneElRef.current = el
+        zoneRef?.(el)
+      }}
+      className={`relative flex flex-1 select-none flex-col overflow-hidden ${accent.zone}`}
     >
-      <div
-        key={`shake-${shakeKey}`}
-        className={`flex flex-1 ${isBottom ? 'flex-col-reverse' : 'flex-col'} ${shakeKey > 0 ? 'animate-shake' : ''}`}
-      >
+      <div ref={shakeWrapRef} className={`flex flex-1 ${isBottom ? 'flex-col-reverse' : 'flex-col'}`}>
         {labelBar}
         {grid}
       </div>

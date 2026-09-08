@@ -36,6 +36,12 @@ export interface FightSide {
   hits: number
 }
 
+/** Un golpe conectado: qué lado atacó y con qué personaje. No se muestra aún en la UI, se guarda para futuras estadísticas. */
+export interface HitLogEntry {
+  attackerSide: 0 | 1
+  character: string
+}
+
 export interface Fight {
   id: string
   gameId: GameId
@@ -43,4 +49,5 @@ export interface Fight {
   finishedAt: number | null
   status: 'live' | 'finished'
   sides: [FightSide, FightSide]
+  hitsLog: HitLogEntry[]
 }

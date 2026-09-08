@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
 import CharacterPicker from '../components/CharacterPicker'
+import PageTransition from '../components/PageTransition'
 import { Select } from '../components/ui'
 import { GAME_LIST, GAMES } from '../data/kofData'
 import { shortGameYear } from '../lib/gameLabel'
@@ -174,28 +175,28 @@ export default function NewFightPage() {
 
   if (players.length < 2) {
     return (
-      <div className="flex flex-1 flex-col">
+      <PageTransition className="flex flex-1 flex-col">
         <AppHeader title="Crear pelea" onBack="home" />
         <div className="flex-1 px-4 py-8 text-center">
           <p className="text-sm text-white/60">
             Necesitás al menos 2 jugadores cargados para armar una pelea.
           </p>
         </div>
-      </div>
+      </PageTransition>
     )
   }
 
   if (step === 'game' || !gameId) {
     return (
-      <div className="flex flex-1 flex-col">
+      <PageTransition className="flex flex-1 flex-col">
         <AppHeader title="Crear pelea" onBack="home" />
         <GameSelectStep onSelect={handleSelectGame} />
-      </div>
+      </PageTransition>
     )
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <PageTransition className="flex flex-1 flex-col">
       <AppHeader title={`KOF ${shortGameYear(GAMES[gameId].year)}`} onBack={() => setStep('game')} />
       <div className="flex-1 px-4 py-5">
         <div className="relative space-y-6">
@@ -243,6 +244,6 @@ export default function NewFightPage() {
           />
         </div>
       </div>
-    </div>
+    </PageTransition>
   )
 }

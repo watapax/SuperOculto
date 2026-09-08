@@ -29,8 +29,8 @@ export const api = {
     player2Id: string
     player2Characters: string[]
   }) => request<Fight>('/fights', { method: 'POST', body: JSON.stringify(params) }),
-  addHit: (fightId: string, side: 0 | 1) =>
-    request<Fight>(`/fights/${fightId}/hit`, { method: 'POST', body: JSON.stringify({ side }) }),
+  addHit: (fightId: string, attackerSide: 0 | 1, character: string) =>
+    request<Fight>(`/fights/${fightId}/hit`, { method: 'POST', body: JSON.stringify({ attackerSide, character }) }),
   undoHit: (fightId: string, side: 0 | 1) =>
     request<Fight>(`/fights/${fightId}/undo`, { method: 'POST', body: JSON.stringify({ side }) }),
   finishFight: (fightId: string) => request<Fight>(`/fights/${fightId}/finish`, { method: 'POST' }),
