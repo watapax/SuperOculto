@@ -29,23 +29,22 @@ export function computeHitStandings(players: Player[], fights: Fight[]): HitStan
   return [...rows.values()].sort((a, b) => b.hitsReceived - a.hitsReceived)
 }
 
-export interface CharacterStat {
+export interface CharacterHitStanding {
   character: string
-  timesUsed: number
+  hits: number
 }
 
-export function computeCharacterStats(fights: Fight[]): CharacterStat[] {
-  const stats = new Map<string, CharacterStat>()
+/** Ranking de personajes por cantidad de movimientos especiales marcados (conectados), no por veces elegido. */
+export function computeCharacterHitStandings(fights: Fight[]): CharacterHitStanding[] {
+  const hits = new Map<string, number>()
 
   for (const fight of fights) {
-    for (const side of fight.sides) {
-      for (const character of side.characters) {
-        const existing = stats.get(character) ?? { character, timesUsed: 0 }
-        existing.timesUsed += 1
-        stats.set(character, existing)
-      }
+    for (const entry of fight.hitsLog) {
+      hits.set(entry.character, (hits.get(entry.character) ?? 0) + 1)
     }
   }
 
-  return [...stats.values()].sort((a, b) => b.timesUsed - a.timesUsed)
+  return [...hits.entries()]
+    .map(([character, hits]) => ({ character, hits }))
+    .sort((a, b) => b.hits - a.hits)
 }

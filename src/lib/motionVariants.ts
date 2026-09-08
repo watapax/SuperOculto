@@ -77,3 +77,24 @@ export const vsPunchIn = {
   hidden: { opacity: 0, scale: 0.5 },
   show: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: easeOutSine } },
 }
+
+/**
+ * Listas colapsables (rankings, historial): los items se revelan en cascada
+ * de arriba hacia abajo, con posición + opacidad, arrancando rápido y
+ * asentando suave (OutSine).
+ */
+export const listContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.055, delayChildren: 0.02 } },
+}
+
+export const listItemReveal = {
+  hidden: { opacity: 0, y: -14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: easeOutSine } },
+}
+
+/** Salida rápida al colapsar la sección (sin cascada, para que se sienta ágil). */
+export const listExit = {
+  opacity: 0,
+  transition: { duration: 0.15 },
+}
