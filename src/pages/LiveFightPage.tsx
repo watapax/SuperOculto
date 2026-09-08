@@ -21,23 +21,93 @@ interface Projectile {
 
 const DOT = 22
 const PROJECTILE_DURATION_MS = 300
+// Cantidad de "ecos" fantasma que forman la estela detrás de la cabeza del proyectil.
+const TRAIL_COUNT = 5
+// Cuánto se retrasa cada eco respecto al anterior (ms). A mayor valor, estela más larga.
+const TRAIL_STAGGER_MS = 26
 
+/**
+ * Proyectil con estela, pensado para renderizar bien en mobile.
+ *
+ * Ojo: el efecto anterior dependía de animar `box-shadow` con blur junto al
+ * `transform`. Eso se ve bien en desktop porque el navegador puede repintar
+ * el blur en cada frame sin problema, pero `box-shadow` no compone en la GPU
+ * como sí lo hacen `transform`/`opacity` — en Safari/iOS y en WebViews
+ * Android de gama media el motor termina salteando esos repintados para no
+ * trabar la animación, y el brillo/estela directamente no se ve.
+ *
+ * Por eso acá:
+ * - El movimiento se hace en un único contenedor animado solo por `x`/`y`
+ *   (transform puro, compositable en GPU en cualquier plataforma).
+ * - El halo usa `filter: blur()` FIJO (el valor no cambia entre frames, solo
+ *   se mueve junto con el contenedor), que sí es GPU-friendly.
+ * - La estela es real: varias copias fantasma retrasadas unos ms, que se
+ *   desvanecen con `opacity`/`scale` (nunca con blur animado).
+ */
 function FlyingHit({ p }: { p: Projectile }) {
+  const dx = p.x1 - p.x0
+  const dy = p.y1 - p.y0
+
   return (
     <motion.div
-      className="pointer-events-none absolute z-40 rounded-full"
-      style={{
-        width: DOT,
-        height: DOT,
-        left: p.x0 - DOT / 2,
-        top: p.y0 - DOT / 2,
-        background: 'radial-gradient(circle, #fff, #ffd60a 45%, #ff3b5c 90%)',
-        boxShadow: '0 0 14px 4px rgba(255,214,10,0.85), 0 0 30px 10px rgba(255,59,92,0.55)',
-      }}
-      initial={{ x: 0, y: 0, opacity: 0.4, scale: 0.7 }}
-      animate={{ x: p.x1 - p.x0, y: p.y1 - p.y0, opacity: 1, scale: 1 }}
+      className="pointer-events-none absolute z-40"
+      style={{ left: p.x0, top: p.y0, willChange: 'transform' }}
+      initial={{ x: 0, y: 0 }}
+      animate={{ x: dx, y: dy }}
       transition={{ duration: PROJECTILE_DURATION_MS / 1000, ease: [0.3, 0, 0.2, 1] }}
-    />
+    >
+      {/* Halo: blur estático, no animado -> compositable en GPU */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          width: DOT * 2.4,
+          height: DOT * 2.4,
+          left: -DOT * 1.2,
+          top: -DOT * 1.2,
+          background: 'radial-gradient(circle, rgba(255,214,10,0.9), rgba(255,59,92,0.55) 55%, transparent 75%)',
+          filter: 'blur(6px)',
+        }}
+      />
+
+      {/* Estela: ecos retrasados que se desvanecen (solo opacity/scale) */}
+      {Array.from({ length: TRAIL_COUNT }, (_, i) => {
+        const echoIndex = i + 1
+        const size = DOT * (1 - echoIndex * 0.13)
+        return (
+          <motion.div
+            key={echoIndex}
+            className="pointer-events-none absolute rounded-full"
+            style={{
+              width: size,
+              height: size,
+              left: -size / 2,
+              top: -size / 2,
+              background: 'radial-gradient(circle, #ffd60a, #ff3b5c 85%)',
+              willChange: 'transform, opacity',
+            }}
+            initial={{ x: -dx, y: -dy, opacity: 0 }}
+            animate={{ x: 0, y: 0, opacity: [0, 0.55, 0] }}
+            transition={{
+              duration: (PROJECTILE_DURATION_MS * 0.55) / 1000,
+              delay: (echoIndex * TRAIL_STAGGER_MS) / 1000,
+              ease: 'easeOut',
+            }}
+          />
+        )
+      })}
+
+      {/* Cabeza del proyectil */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          width: DOT,
+          height: DOT,
+          left: -DOT / 2,
+          top: -DOT / 2,
+          background: 'radial-gradient(circle, #fff, #ffd60a 45%, #ff3b5c 90%)',
+        }}
+      />
+    </motion.div>
   )
 }
 
