@@ -12,6 +12,7 @@ import CharacterAvatar from '../components/CharacterAvatar'
 import { Select } from '../components/ui'
 import { GAME_LIST, GAMES } from '../data/kofData'
 import { shortGameYear } from '../lib/gameLabel'
+import { shortCharacterName } from '../lib/characterName'
 import { wizardStep } from '../lib/motionVariants'
 import { preloadFlameData } from '../lib/flamePreload'
 import { useStore } from '../store/useStore'
@@ -157,7 +158,7 @@ function PlayerStep({
             ))}
         </Select>
 
-        {playerId ? (
+        {playerId && (
           <CharacterSlotPicker
             key={playerId}
             options={gameCharacters}
@@ -167,10 +168,6 @@ function PlayerStep({
             playerName={player?.name}
             accentText={accent.text}
           />
-        ) : (
-          <p className="rounded-xl border border-dashed border-edge/50 p-4 text-center text-xs text-white/40">
-            Elegí un jugador para armar su equipo
-          </p>
         )}
       </div>
 
@@ -207,10 +204,15 @@ function FighterSummaryRow({
         <PlayerAvatar name={player?.name ?? '?'} avatar={player?.avatar} size="md" />
         <p className={`font-display text-3xl leading-none tracking-wide ${accentText}`}>{player?.name ?? '?'}</p>
       </div>
-      <div className="flex w-[58vw] max-w-56 overflow-hidden rounded-xl border border-edge/70">
-        {characters.map((c, i) => (
-          <div key={c} className={`aspect-square flex-1 ${i > 0 ? 'border-l border-edge/40' : ''}`}>
-            <CharacterAvatar name={c} character fill />
+      <div className={`flex gap-2 ${isEnd ? 'flex-row-reverse' : ''}`}>
+        {characters.map((c) => (
+          <div key={c} className="flex w-16 flex-col items-center gap-1">
+            <div className="aspect-square w-full overflow-hidden rounded-xl border border-edge/70">
+              <CharacterAvatar name={c} character fill />
+            </div>
+            <span className="w-full truncate text-center text-[10px] font-medium text-white/60">
+              {shortCharacterName(c)}
+            </span>
           </div>
         ))}
       </div>
@@ -274,8 +276,8 @@ function ReadyStep({
         <FighterSummaryRow player={player1} characters={char1} align="start" accentText="text-brand-2" />
 
         <div className="relative flex flex-1 items-center justify-center">
-          <div className="fight-glow absolute h-[220px] w-[220px] rounded-full bg-[radial-gradient(circle,rgba(255,138,61,0.32),rgba(255,59,92,0.14)_55%,transparent_78%)] blur-md" />
-          <FlameBurst className="absolute bottom-1/2 left-1/2 w-[170px] -translate-x-1/2 translate-y-[40%]" />
+          <div className="fight-glow absolute h-[280px] w-[280px] rounded-full bg-[radial-gradient(circle,rgba(255,138,61,0.32),rgba(255,59,92,0.14)_55%,transparent_78%)] blur-md" />
+          <FlameBurst className="absolute bottom-1/2 left-1/2 w-[220px] -translate-x-1/2 translate-y-[40%]" />
           <motion.button
             type="button"
             onClick={handleFightTap}
@@ -284,9 +286,9 @@ function ReadyStep({
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
             whileTap={{ scale: 0.9 }}
-            className="relative z-[2] flex h-32 w-32 flex-col items-center justify-center rounded-full border-4 border-ink bg-gradient-to-br from-brand via-brand-2 to-accent text-ink shadow-[0_0_60px_-2px_var(--color-brand)]"
+            className="relative z-[2] flex h-40 w-40 flex-col items-center justify-center rounded-full border-4 border-ink bg-gradient-to-br from-brand via-brand-2 to-accent text-ink shadow-[0_0_60px_-2px_var(--color-brand)]"
           >
-            <span className="font-display-hard text-3xl leading-none tracking-wide">PELEAR</span>
+            <span className="font-display-hard text-4xl leading-none tracking-wide">PELEAR</span>
           </motion.button>
         </div>
 

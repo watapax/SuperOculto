@@ -14,10 +14,11 @@ const MEDALS = ['🥇', '🥈', '🥉']
 const PAGE_SIZE = 5
 
 /**
- * Sección con título clickeable que expande/colapsa una lista. Arranca
- * cerrada y, al abrirse, muestra solo los primeros `PAGE_SIZE` items con un
- * botón "Ver más" para cargar el resto. Los items se revelan en cascada
- * (posición + opacidad) de arriba hacia abajo.
+ * Sección con título y una lista animada (cascada de posición + opacidad, arriba
+ * hacia abajo). Si `alwaysOpen` es true, queda siempre visible sin botón de
+ * colapsar (para el ranking principal). Si no, arranca cerrada y el título hace de
+ * botón para expandir/colapsar; al abrirse, muestra solo los primeros `PAGE_SIZE`
+ * items con un botón "Ver más" para cargar el resto.
  */
 function CollapsibleList<T>({
   title,
@@ -28,6 +29,7 @@ function CollapsibleList<T>({
   keyExtractor,
   renderItem,
   emptyLabel,
+  alwaysOpen = false,
 }: {
   title: string
   titleClassName: string
@@ -37,6 +39,7 @@ function CollapsibleList<T>({
   keyExtractor: (item: T, index: number) => string
   renderItem: (item: T, index: number) => ReactNode
   emptyLabel: string
+  alwaysOpen?: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -48,42 +51,55 @@ function CollapsibleList<T>({
   const visible = expanded ? items : items.slice(0, PAGE_SIZE)
   const hasMore = !expanded && items.length > PAGE_SIZE
 
+  const content =
+    items.length === 0 ? (
+      <motion.p variants={listItemReveal} className="px-1 py-2 text-sm text-white/50">
+        {emptyLabel}
+      </motion.p>
+    ) : (
+      <div className="space-y-2">
+        {visible.map((item, i) => (
+          <motion.div key={keyExtractor(item, i)} variants={listItemReveal}>
+            {renderItem(item, i)}
+          </motion.div>
+        ))}
+        {hasMore && (
+          <motion.button
+            variants={listItemReveal}
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="w-full rounded-xl border border-edge/60 bg-panel-2/60 py-2.5 text-center text-xs font-bold uppercase tracking-wide text-white/60 active:scale-[0.98]"
+          >
+            Ver más ({items.length - PAGE_SIZE})
+          </motion.button>
+        )}
+      </div>
+    )
+
   return (
     <div className="mb-6">
-      <button type="button" onClick={handleToggle} className="mb-2 flex w-full items-center justify-between">
-        <h2 className={`font-display text-2xl tracking-wide ${titleClassName}`}>{title}</h2>
-        <span className={`text-lg text-white/40 transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
-      </button>
+      {alwaysOpen ? (
+        <h2 className={`mb-2 font-display text-2xl tracking-wide ${titleClassName}`}>{title}</h2>
+      ) : (
+        <button type="button" onClick={handleToggle} className="mb-2 flex w-full items-center justify-between">
+          <h2 className={`font-display text-2xl tracking-wide ${titleClassName}`}>{title}</h2>
+          <span className={`text-lg text-white/40 transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
+        </button>
+      )}
 
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div key="content" variants={listContainer} initial="hidden" animate="show" exit={listExit}>
-            {items.length === 0 ? (
-              <motion.p variants={listItemReveal} className="px-1 py-2 text-sm text-white/50">
-                {emptyLabel}
-              </motion.p>
-            ) : (
-              <div className="space-y-2">
-                {visible.map((item, i) => (
-                  <motion.div key={keyExtractor(item, i)} variants={listItemReveal}>
-                    {renderItem(item, i)}
-                  </motion.div>
-                ))}
-                {hasMore && (
-                  <motion.button
-                    variants={listItemReveal}
-                    type="button"
-                    onClick={() => setExpanded(true)}
-                    className="w-full rounded-xl border border-edge/60 bg-panel-2/60 py-2.5 text-center text-xs font-bold uppercase tracking-wide text-white/60 active:scale-[0.98]"
-                  >
-                    Ver más ({items.length - PAGE_SIZE})
-                  </motion.button>
-                )}
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {alwaysOpen ? (
+        <motion.div variants={listContainer} initial="hidden" animate="show">
+          {content}
+        </motion.div>
+      ) : (
+        <AnimatePresence initial={false}>
+          {isOpen && (
+            <motion.div key="content" variants={listContainer} initial="hidden" animate="show" exit={listExit}>
+              {content}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </div>
   )
 }
@@ -127,29 +143,28 @@ export default function StatsPage() {
           </p>
         ) : (
           <>
-            <h2 className="mb-2 font-display text-2xl tracking-wide text-brand-2">Más golpeados 🥊</h2>
-            <Card className="mb-6 overflow-x-auto !p-0 border-brand/30 shadow-[0_0_24px_-12px_var(--color-brand)]">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-edge/50 text-left text-[11px] font-bold uppercase tracking-widest text-white/50">
-                    <th className="py-2.5 pl-3 pr-2">#</th>
-                    <th className="py-2.5 pr-2">Jugador</th>
-                    <th className="py-2.5 pr-2 text-right">Peleas</th>
-                    <th className="py-2.5 pr-3 text-right">Ocultos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {standings.map((row, i) => (
-                    <tr key={row.player.id} className="border-b border-edge/20 last:border-0">
-                      <td className="py-2.5 pl-3 pr-2">{MEDALS[i] ?? <span className="text-white/40">{i + 1}</span>}</td>
-                      <td className="py-2.5 pr-2 font-display text-base tracking-wide">{row.player.name}</td>
-                      <td className="py-2.5 pr-2 text-right text-white/60">{row.fights}</td>
-                      <td className="py-2.5 pr-3 text-right font-display text-2xl text-accent">{row.hitsReceived}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Card>
+            <CollapsibleList
+              title="Más golpeados 🥊"
+              titleClassName="text-brand-2"
+              items={standings}
+              isOpen
+              onToggle={() => {}}
+              alwaysOpen
+              keyExtractor={(row) => row.player.id}
+              emptyLabel="Todavía no hay golpes registrados."
+              renderItem={(row, i) => (
+                <Card className="flex items-center gap-3 !p-2.5">
+                  <span className="w-6 shrink-0 text-center text-sm">
+                    {MEDALS[i] ?? <span className="text-white/40">{i + 1}</span>}
+                  </span>
+                  <div className="flex-1">
+                    <p className="font-display text-lg tracking-wide">{row.player.name}</p>
+                    <p className="text-xs text-white/50">{row.fights} peleas</p>
+                  </div>
+                  <span className="font-display text-2xl text-accent">{row.hitsReceived}</span>
+                </Card>
+              )}
+            />
 
             <CollapsibleList
               title="Los más Paperos 🌶️"

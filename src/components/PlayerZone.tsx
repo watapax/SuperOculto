@@ -81,7 +81,10 @@ export default function PlayerZone({
   }, [shakeKey])
 
   const labelBar = (
-    <motion.div variants={staggerItem} className={`flex items-center justify-between gap-2 px-4 py-2 ${accent.bar}`}>
+    <motion.div
+      variants={staggerItem}
+      className={`flex items-center justify-between gap-2 px-4 py-2 ${accent.bar} ${position === 'top' ? 'pt-14' : ''}`}
+    >
       <span className={`truncate font-display text-3xl tracking-wide ${accent.text}`}>{playerName}</span>
       <div className="flex items-center gap-2">
         <span
