@@ -107,7 +107,7 @@ export default function PlayerZone({
   )
 
   const grid = (
-    <div className="grid flex-1 grid-cols-3 gap-1 p-1">
+    <div className="grid flex-1 grid-cols-3 gap-2 p-2">
       {characters.map((c) => (
         <motion.div
           key={c}

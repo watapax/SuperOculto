@@ -1,7 +1,7 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle2, ChevronRight, Gamepad2, UserRound } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Gamepad2 } from 'lucide-react'
 import AppHeader from '../components/AppHeader'
 import CharacterSlotPicker, { REQUIRED_CHARACTERS } from '../components/CharacterSlotPicker'
 import ExplosionBurst from '../components/ExplosionBurst'
@@ -13,6 +13,7 @@ import { Select } from '../components/ui'
 import { GAME_LIST, GAMES } from '../data/kofData'
 import { shortGameYear } from '../lib/gameLabel'
 import { wizardStep } from '../lib/motionVariants'
+import { preloadFlameData } from '../lib/flamePreload'
 import { useStore } from '../store/useStore'
 import type { GameId, GameTeam, Player } from '../types'
 
@@ -145,17 +146,6 @@ function PlayerStep({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="mb-4 flex items-center gap-2">
-          <span
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${accent.from} ${accent.to} ${accent.shadow}`}
-          >
-            <UserRound className="h-5 w-5 text-ink" strokeWidth={2.5} />
-          </span>
-          <span className={`font-display text-2xl tracking-wide ${accent.text}`}>
-            {side === 'p1' ? 'Jugador 1' : 'Jugador 2'}
-          </span>
-        </div>
-
         <Select value={playerId} onChange={(e) => onPlayerChange(e.target.value)} className="mb-4 w-full">
           <option value="">Elegir jugador...</option>
           {players
@@ -319,6 +309,13 @@ export default function NewFightPage() {
   const [player2Id, setPlayer2Id] = useState('')
   const [char1, setChar1] = useState<string[]>([])
   const [char2, setChar2] = useState<string[]>([])
+
+  // Precargar los datos de la llama (chunk aparte, ~90KB) apenas se entra al wizard,
+  // bastante antes de llegar a la pantalla "¡Todo listo!" donde se usa — así no hay
+  // ningún salto/frame pegado esperando la carga en mobiles.
+  useEffect(() => {
+    preloadFlameData()
+  }, [])
 
   const gameCharacters = gameId ? GAMES[gameId].characters : []
   const gameTeams = gameId ? GAMES[gameId].teams : undefined

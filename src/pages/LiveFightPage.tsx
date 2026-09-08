@@ -2,11 +2,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import AppHeader from '../components/AppHeader'
+import ConfirmDialog from '../components/ConfirmDialog'
 import PageTransition from '../components/PageTransition'
+import PlayerAvatar from '../components/PlayerAvatar'
 import PlayerZone from '../components/PlayerZone'
-import { GAMES } from '../data/kofData'
-import { shortGameYear } from '../lib/gameLabel'
-import { dividerReveal, fightHeaderReveal, fightSceneContainer, vsPunchIn } from '../lib/motionVariants'
+import { dividerReveal, fightSceneContainer, vsPunchIn } from '../lib/motionVariants'
 import { useStore } from '../store/useStore'
 
 interface Projectile {
@@ -129,6 +129,8 @@ export default function LiveFightPage() {
   const [projectiles, setProjectiles] = useState<Projectile[]>([])
   const [p1HitTrigger, setP1HitTrigger] = useState(0)
   const [p2HitTrigger, setP2HitTrigger] = useState(0)
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [finishDialogOpen, setFinishDialogOpen] = useState(false)
 
   useEffect(
     () => () => {
@@ -148,7 +150,6 @@ export default function LiveFightPage() {
     )
   }
 
-  const game = GAMES[fight.gameId]
   const p1 = players.find((p) => p.id === fight.sides[0].playerId)
   const p2 = players.find((p) => p.id === fight.sides[1].playerId)
 
@@ -189,48 +190,28 @@ export default function LiveFightPage() {
     addHit(fight!.id, p.attackerSide, p.character)
   }
 
-  async function handleBack() {
-    if (confirm('¿Cancelar esta pelea? No se va a guardar el resultado.')) {
-      try {
-        await discardFight(fight!.id)
-      } catch (err) {
-        alert(err instanceof Error ? err.message : 'No se pudo cancelar la pelea')
-      }
-      navigate('/')
+  async function confirmCancelFight() {
+    setCancelDialogOpen(false)
+    try {
+      await discardFight(fight!.id)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo cancelar la pelea')
     }
+    navigate('/')
   }
 
-  async function handleFinish() {
-    const [s1, s2] = fight!.sides
-    const summary = `${p1?.name ?? '?'}: ${s1.hits} golpes\n${p2?.name ?? '?'}: ${s2.hits} golpes\n\n¿Finalizar y guardar la pelea?`
-    if (confirm(summary)) {
-      try {
-        await finishFight(fight!.id)
-        navigate('/estadisticas')
-      } catch (err) {
-        alert(err instanceof Error ? err.message : 'No se pudo finalizar la pelea')
-      }
+  async function confirmFinishFight() {
+    setFinishDialogOpen(false)
+    try {
+      await finishFight(fight!.id)
+      navigate('/estadisticas')
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo finalizar la pelea')
     }
   }
 
   return (
     <PageTransition className="mx-auto flex h-dvh max-w-md flex-col">
-      <motion.div initial="hidden" animate="show" variants={fightHeaderReveal}>
-        <AppHeader
-          title={`KOF ${shortGameYear(game.year)}`}
-          onBack={handleBack}
-          right={
-            <button
-              type="button"
-              onClick={handleFinish}
-              className="shrink-0 rounded-xl bg-gradient-to-br from-brand to-brand-2 px-4 py-2 font-display text-sm tracking-wide text-ink shadow-[0_2px_12px_-2px_var(--color-brand)] active:scale-95"
-            >
-              Finalizar
-            </button>
-          }
-        />
-      </motion.div>
-
       <motion.div
         ref={containerRef}
         variants={fightSceneContainer}
@@ -238,6 +219,23 @@ export default function LiveFightPage() {
         animate="show"
         className="relative flex flex-1 flex-col overflow-hidden"
       >
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between p-3">
+          <button
+            type="button"
+            onClick={() => setCancelDialogOpen(true)}
+            aria-label="Volver"
+            className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-ink/40 text-base text-white/70 backdrop-blur-sm active:scale-95"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={() => setFinishDialogOpen(true)}
+            className="pointer-events-auto rounded-full bg-ink/40 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white/70 backdrop-blur-sm active:scale-95"
+          >
+            Finalizar
+          </button>
+        </div>
         <PlayerZone
           position="top"
           playerName={p1?.name ?? 'Jugador 1'}
@@ -289,6 +287,45 @@ export default function LiveFightPage() {
           </span>
         </motion.div>
       </motion.div>
+
+      <ConfirmDialog
+        open={cancelDialogOpen}
+        title="¿Cancelar esta pelea?"
+        description="No se va a guardar ningún resultado."
+        confirmLabel="Sí, cancelar"
+        cancelLabel="Seguir peleando"
+        tone="danger"
+        onConfirm={confirmCancelFight}
+        onCancel={() => setCancelDialogOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={finishDialogOpen}
+        title="¿Finalizar pelea?"
+        description="Se va a guardar este resultado en el ranking."
+        confirmLabel="Finalizar"
+        cancelLabel="Seguir peleando"
+        onConfirm={confirmFinishFight}
+        onCancel={() => setFinishDialogOpen(false)}
+      >
+        <div className="flex items-center justify-between gap-3 rounded-xl bg-panel-2 p-3">
+          <div className="flex items-center gap-2">
+            <PlayerAvatar name={p1?.name ?? '?'} avatar={p1?.avatar} size="sm" />
+            <div>
+              <p className="text-sm font-bold text-white">{p1?.name ?? '?'}</p>
+              <p className="font-display text-2xl leading-none text-brand-2">{fight.sides[0].hits}</p>
+            </div>
+          </div>
+          <span className="font-display text-lg text-white/30">vs</span>
+          <div className="flex flex-row-reverse items-center gap-2 text-right">
+            <PlayerAvatar name={p2?.name ?? '?'} avatar={p2?.avatar} size="sm" />
+            <div>
+              <p className="text-sm font-bold text-white">{p2?.name ?? '?'}</p>
+              <p className="font-display text-2xl leading-none text-cyan">{fight.sides[1].hits}</p>
+            </div>
+          </div>
+        </div>
+      </ConfirmDialog>
     </PageTransition>
   )
 }
