@@ -1,16 +1,17 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle2, ChevronRight, Flame, Gamepad2, UserRound } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Gamepad2, UserRound } from 'lucide-react'
 import AppHeader from '../components/AppHeader'
 import CharacterSlotPicker, { REQUIRED_CHARACTERS } from '../components/CharacterSlotPicker'
+import ExplosionBurst from '../components/ExplosionBurst'
+import FlameBurst from '../components/FlameBurst'
 import PageTransition from '../components/PageTransition'
 import PlayerAvatar from '../components/PlayerAvatar'
 import CharacterAvatar from '../components/CharacterAvatar'
 import { Select } from '../components/ui'
 import { GAME_LIST, GAMES } from '../data/kofData'
 import { shortGameYear } from '../lib/gameLabel'
-import { shortCharacterName } from '../lib/characterName'
 import { wizardStep } from '../lib/motionVariants'
 import { useStore } from '../store/useStore'
 import type { GameId, GameTeam, Player } from '../types'
@@ -209,64 +210,100 @@ function FighterSummaryRow({
   align: 'start' | 'end'
   accentText: string
 }) {
+  const isEnd = align === 'end'
   return (
-    <div className={`flex items-center gap-3 ${align === 'end' ? 'flex-row-reverse text-right' : ''}`}>
-      <PlayerAvatar name={player?.name ?? '?'} avatar={player?.avatar} size="md" />
-      <div className="flex-1">
-        <p className={`font-display text-xl tracking-wide ${accentText}`}>{player?.name ?? '?'}</p>
-        <div className={`mt-1.5 flex gap-1.5 ${align === 'end' ? 'flex-row-reverse' : ''}`}>
-          {characters.map((c) => (
-            <div key={c} className="flex flex-col items-center gap-0.5">
-              <CharacterAvatar name={c} character size="sm" />
-              <span className="line-clamp-1 max-w-[3.2rem] text-[10px] font-medium text-white/60">
-                {shortCharacterName(c)}
-              </span>
-            </div>
-          ))}
-        </div>
+    <div className={`flex flex-col gap-2.5 ${isEnd ? 'items-end' : 'items-start'}`}>
+      <div className={`flex items-center gap-2.5 ${isEnd ? 'flex-row-reverse' : ''}`}>
+        <PlayerAvatar name={player?.name ?? '?'} avatar={player?.avatar} size="md" />
+        <p className={`font-display text-3xl leading-none tracking-wide ${accentText}`}>{player?.name ?? '?'}</p>
+      </div>
+      <div className="flex w-[58vw] max-w-56 overflow-hidden rounded-xl border border-edge/70">
+        {characters.map((c, i) => (
+          <div key={c} className={`aspect-square flex-1 ${i > 0 ? 'border-l border-edge/40' : ''}`}>
+            <CharacterAvatar name={c} character fill />
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
 function ReadyStep({
-  gameId,
   player1,
   char1,
   player2,
   char2,
   onFight,
+  onBack,
 }: {
-  gameId: GameId
   player1?: Player
   char1: string[]
   player2?: Player
   char2: string[]
   onFight: () => void
+  onBack: () => void
 }) {
-  return (
-    <div className="flex flex-1 flex-col justify-between overflow-y-auto px-5 py-6">
-      <FighterSummaryRow player={player1} characters={char1} align="start" accentText="text-brand-2" />
+  const [explosionKey, setExplosionKey] = useState(0)
+  const [exploding, setExploding] = useState(false)
 
-      <div className="flex flex-col items-center gap-4 py-8">
-        <span className="rounded-full bg-panel-2 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white/50">
-          KOF {shortGameYear(GAMES[gameId].year)}
-        </span>
-        <motion.button
-          type="button"
-          onClick={onFight}
-          initial={{ scale: 0.85, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
-          whileTap={{ scale: 0.92 }}
-          className="flex h-36 w-36 flex-col items-center justify-center gap-1 rounded-full border-4 border-ink bg-gradient-to-br from-brand via-brand-2 to-accent text-ink shadow-[0_0_50px_-6px_var(--color-brand)]"
-        >
-          <Flame className="h-9 w-9" strokeWidth={2.5} />
-          <span className="font-display text-2xl tracking-wide">PELEAR</span>
-        </motion.button>
+  function handleFightTap() {
+    setExplosionKey((k) => k + 1)
+    setExploding(true)
+    onFight()
+  }
+
+  return (
+    <div className="relative flex flex-1 flex-col overflow-hidden">
+      {/* Dos "ambientes" separados por un corte diagonal, uno por jugador. */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: 'radial-gradient(760px 520px at 10% -10%, rgba(255,59,92,0.24), rgba(255,59,92,0.08) 45%, transparent 75%), var(--color-ink)',
+          clipPath: 'polygon(0% 0%, 100% 0%, 100% 40%, 55% 58%, 0% 75%)',
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(760px 520px at 90% 110%, rgba(34,211,238,0.2), rgba(34,211,238,0.07) 45%, transparent 75%), var(--color-ink)',
+          clipPath: 'polygon(100% 40%, 100% 100%, 0% 100%, 0% 75%, 55% 58%)',
+        }}
+      />
+
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label="Volver"
+        className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full text-2xl text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
+      >
+        ←
+      </button>
+
+      <div className="relative z-[1] flex flex-1 flex-col justify-between px-5 py-14">
+        <FighterSummaryRow player={player1} characters={char1} align="start" accentText="text-brand-2" />
+
+        <div className="relative flex flex-1 items-center justify-center">
+          <div className="fight-glow absolute h-[220px] w-[220px] rounded-full bg-[radial-gradient(circle,rgba(255,138,61,0.32),rgba(255,59,92,0.14)_55%,transparent_78%)] blur-md" />
+          <FlameBurst className="absolute bottom-1/2 left-1/2 w-[170px] -translate-x-1/2 translate-y-[40%]" />
+          <motion.button
+            type="button"
+            onClick={handleFightTap}
+            disabled={exploding}
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
+            whileTap={{ scale: 0.9 }}
+            className="relative z-[2] flex h-32 w-32 flex-col items-center justify-center rounded-full border-4 border-ink bg-gradient-to-br from-brand via-brand-2 to-accent text-ink shadow-[0_0_60px_-2px_var(--color-brand)]"
+          >
+            <span className="font-display-hard text-3xl leading-none tracking-wide">PELEAR</span>
+          </motion.button>
+        </div>
+
+        <FighterSummaryRow player={player2} characters={char2} align="end" accentText="text-cyan" />
       </div>
 
-      <FighterSummaryRow player={player2} characters={char2} align="end" accentText="text-cyan" />
+      {exploding && <ExplosionBurst triggerKey={explosionKey} />}
     </div>
   )
 }
@@ -328,7 +365,7 @@ export default function NewFightPage() {
     game: 'Crear pelea',
     player1: 'Jugador 1',
     player2: 'Jugador 2',
-    ready: '¡Todo listo!',
+    ready: '',
   }
 
   function handleBack() {
@@ -339,7 +376,7 @@ export default function NewFightPage() {
 
   return (
     <PageTransition className="flex flex-1 flex-col overflow-hidden">
-      <AppHeader title={titles[step]} onBack={step === 'game' ? 'home' : handleBack} />
+      {step !== 'ready' && <AppHeader title={titles[step]} onBack={step === 'game' ? 'home' : handleBack} />}
       <StepTransition stepKey={step}>
         {step === 'game' && <GameSelectStep onSelect={handleSelectGame} />}
 
@@ -380,7 +417,14 @@ export default function NewFightPage() {
         )}
 
         {step === 'ready' && gameId && (
-          <ReadyStep gameId={gameId} player1={player1} char1={char1} player2={player2} char2={char2} onFight={handleStart} />
+          <ReadyStep
+            player1={player1}
+            char1={char1}
+            player2={player2}
+            char2={char2}
+            onFight={handleStart}
+            onBack={() => setStep('player2')}
+          />
         )}
       </StepTransition>
     </PageTransition>
