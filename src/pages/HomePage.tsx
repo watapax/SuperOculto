@@ -5,7 +5,7 @@ const items = [
   {
     to: '/pelea/nueva',
     label: 'Crear pelea',
-    icon: '⚔️',
+    icon: '/icons/menu/crear-pelea.png',
     from: 'from-brand',
     to2: 'to-brand-2',
     ring: 'hover:border-brand/60',
@@ -13,7 +13,7 @@ const items = [
   {
     to: '/jugadores',
     label: 'Jugadores',
-    icon: '➕',
+    icon: '/icons/menu/jugadores.png',
     from: 'from-cyan-2',
     to2: 'to-cyan',
     ring: 'hover:border-cyan/60',
@@ -21,7 +21,7 @@ const items = [
   {
     to: '/estadisticas',
     label: 'Ranking',
-    icon: '📊',
+    icon: '/icons/menu/estadisticas.png',
     from: 'from-violet',
     to2: 'to-accent',
     ring: 'hover:border-violet/60',
@@ -48,9 +48,9 @@ export default function HomePage() {
             className={`flex items-center gap-4 rounded-2xl border border-edge/60 bg-panel/80 p-5 shadow-lg shadow-black/40 backdrop-blur-sm transition-all active:scale-[0.97] ${item.ring}`}
           >
             <span
-              className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${item.from} ${item.to2} text-2xl shadow-lg`}
+              className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${item.from} ${item.to2} p-2.5 shadow-lg`}
             >
-              {item.icon}
+              <img src={item.icon} alt="" className="h-full w-full object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
             </span>
             <span className="flex-1 font-display text-2xl tracking-wide text-white">{item.label}</span>
             <span className="text-2xl text-white/25">›</span>
